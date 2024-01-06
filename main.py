@@ -18,11 +18,10 @@ from io import BytesIO
 from PIL import ImageTk,Image,ImageFilter
 import tkinter.messagebox as msgbox
 
-from Fingers import Hand
 
+left_fingers_text=['左手小指','左手無名指','左手中指','左手食指','左手大拇指']
+right_fingers_text=['右手大拇指','右手食指','右手中指','右手無名指','右手小指']
 
-fingers_text=['左手小指','左手無名指','左手中指','左手食指','左手大拇指'
-              ,'右手大拇指','右手食指','右手中指','右手無名指','右手小指']
 
 # 定义全局变量
 global root,text,KEY,SN_list, isOpen, isRunning,feature,\
@@ -41,6 +40,7 @@ rollImageHeight = None  # 指纹图片高度
 openButton=None  #开始按钮
 ImageSize=0  #图片大小
 text=None  #信息框
+fingers_label=None
 lableShowImage1=None  #滚动图片框
 lableShowImage2=None  #滚动合成图片框
 lableShowFingerImage=None  #滚动合成图片框
@@ -99,17 +99,21 @@ def UI():
 
 #region 滚动采集图片框
 def showImage1(root):
-    global lableShowImage1, lableShowImage2, bmpImage1, bmpImage2
+    global fingers_label, lableShowImage1, lableShowImage2, bmpImage1, bmpImage2
     auxiliary = auxiliaryMeans()
-    labFrame = LabelFrame(root, text="滚动采集指纹图像", relief=GROOVE, width=850, height=500)  # 设置图片样式
-    labFrame.place(relx=0.48, rely=0.01)
+    labFrame = LabelFrame(root, text="滚动采集指纹图像", relief=GROOVE, width=850, height=500,font=(None,20))  # 设置图片样式
+    labFrame.place(relx=0.45, rely=0.01)
+
+    fingers_label = Label(labFrame,text='手指',font=(None,32))
+    fingers_label.place(relx=0, rely=0)
+    
 
     lableShowImage1 = Label(labFrame)  # 包含图片的标签
-    lableShowImage1.place(relx=0, rely=0)
+    lableShowImage1.place(relx=0, rely=0.1)
     lableShowImage1.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage1))
 
     lableShowImage2 = Label(labFrame)  # 包含图片的标签
-    lableShowImage2.place(relx=0.5, rely=0)
+    lableShowImage2.place(relx=0.4, rely=0.1)
     lableShowImage2.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage2))
 
     return lableShowImage1, lableShowImage2
@@ -120,8 +124,8 @@ def showImage1(root):
 def showImage2(root):
     global lableShowFingerImage, bmpFingerImg
     auxiliary = auxiliaryMeans()
-    labFrame = LabelFrame(root, text="指纹图像", relief=GROOVE, width=850, height=500)  # 设置图片样式
-    labFrame.place(relx=0.48, rely=0.5)
+    labFrame = LabelFrame(root, text="指纹图像", relief=GROOVE, width=850, height=500,font=(None,20))  # 设置图片样式
+    labFrame.place(relx=0.45, rely=0.5)
 
     lableShowFingerImage = Label(labFrame)  # 包含图片的标签
     lableShowFingerImage.place(relx=0.15, rely=0)
@@ -134,7 +138,8 @@ def showImage2(root):
 def messageScrolledText(root):
     global text
     text = tkinter.scrolledtext.ScrolledText(root, width=86, height=20)  # 设置信息框样式
-    text.place(relx=0.025, rely=0.425)
+    # text.configure(font=("Arial", 20))
+    text.place(relx=0.02, rely=0.425)
     text.see(END)  # 信息框处于滚动条最下面信息的位置
     return text
 #endregion
@@ -146,35 +151,35 @@ def ButtonGroup(root):
     thread=threadGroup()
     # command为按钮的点击事件，不能加括号，如command=openButton_Click而不是command=openButton_Click()
     state = tkinter.DISABLED
-    font=(None, 15)
-    openButton = Button(root, text='打开设备', width=20,height=2, font=font,command=mean.BeginOrClose)
-    featureButton = Button(root, text='注册',state = state, width=20, height=2, font=font, command=thread.featureButton_Click)
-    onCompareFingerButton = Button(root, text='1:1比对',state = state, width=20, height=2, font=font, command=thread.onCompareFingerButton_Click)
-    onCompareIdentifyButton = Button(root, text='1:N识别',state = state, width=20, height=2, font=font, command=thread.onCompareIdentifyButton_Click)
-    onCompareIdentifyNButton = Button(root, text='1:N查重', state=state, width=20, height=2, font=font,command=thread.onCompareIdentifyNButton_Click)
+    font=(None, 16)
+    openButton = Button(root, text='打开设备', width=16,height=2, font=font,command=mean.BeginOrClose)
+    featureButton = Button(root, text='注册',state = state, width=16, height=2, font=font, command=thread.featureButton_Click)
+    onCompareFingerButton = Button(root, text='1:1比对',state = state, width=16, height=2, font=font, command=thread.onCompareFingerButton_Click)
+    onCompareIdentifyButton = Button(root, text='1:N识别',state = state, width=16, height=2, font=font, command=thread.onCompareIdentifyButton_Click)
+    onCompareIdentifyNButton = Button(root, text='1:N查重', state=state, width=16, height=2, font=font,command=thread.onCompareIdentifyNButton_Click)
 
-    rollStartButton = Button(root, text='滚动采集',state = state, width=20, height=2, font=(None,15), command=thread.rollStartButton_Click)
-    stopButton = Button(root, text='停止',state = state, width=20, height=2, font=font, command=mean.Stop)
-    SingleDeleteButton = Button(root, text='单一删除',state = state, width=20, height=2, font=font, command=mean.SingleDelete)
-    AllDeleteButton = Button(root, text='清空指纹库', state=state, width=20, height=2, font=font,command=mean.AllDelete)
-    exitButton = Button(root, text='退出', width=20, height=2, font=font, command=mean.Exit)
+    rollStartButton = Button(root, text='滚动采集',state = state, width=16, height=2, font=(None,16), command=thread.rollStartButton_Click)
+    stopButton = Button(root, text='停止',state = state, width=16, height=2, font=font, command=mean.Stop)
+    SingleDeleteButton = Button(root, text='单一删除',state = state, width=16, height=2, font=font, command=mean.SingleDelete)
+    AllDeleteButton = Button(root, text='清空指纹库', state=state, width=16, height=2, font=font,command=mean.AllDelete)
+    exitButton = Button(root, text='退出', width=16, height=2, font=font, command=mean.Exit)
 
-    allFingersButton = Button(root, text='採集所有手指',state = state, width=20, height=2, font=(None,15), command=thread.allFingersButton_Click)
+    allFingersButton = Button(root, text='採集所有手指',state = state, width=16, height=2, font=(None,16), command=thread.allFingersButton_Click)
 
     # 按钮的位置，范围0-1
-    openButton.place(relx=0.025, rely=0.01)
-    featureButton.place(relx=0.025, rely=0.09)
-    onCompareFingerButton.place(relx=0.025, rely=0.17)
-    onCompareIdentifyButton.place(relx=0.025, rely=0.25)
-    onCompareIdentifyNButton.place(relx=0.025, rely=0.33)
+    openButton.place(relx=0.02, rely=0.01)
+    featureButton.place(relx=0.02, rely=0.09)
+    onCompareFingerButton.place(relx=0.02, rely=0.17)
+    onCompareIdentifyButton.place(relx=0.02, rely=0.25)
+    onCompareIdentifyNButton.place(relx=0.02, rely=0.33)
 
-    rollStartButton.place(relx=0.17, rely=0.01)
-    stopButton.place(relx=0.17, rely=0.09)
-    SingleDeleteButton.place(relx=0.17, rely=0.17)
-    AllDeleteButton.place(relx=0.17, rely=0.25)
-    exitButton.place(relx=0.17, rely=0.33)
+    rollStartButton.place(relx=0.165, rely=0.01)
+    stopButton.place(relx=0.165, rely=0.09)
+    SingleDeleteButton.place(relx=0.165, rely=0.17)
+    AllDeleteButton.place(relx=0.165, rely=0.25)
+    exitButton.place(relx=0.165, rely=0.33)
 
-    allFingersButton.place(relx=0.315, rely=0.01)
+    allFingersButton.place(relx=0.31, rely=0.01)
     return [rollStartButton,featureButton,onCompareFingerButton,onCompareIdentifyButton,onCompareIdentifyNButton,stopButton,SingleDeleteButton,AllDeleteButton, allFingersButton]
 #endregion
 
@@ -313,7 +318,7 @@ class means:
         baseImage = None
         WMRAPI.SetOptions()
         startTime = datetime.datetime.now()
-        imgResizeRate=0.95
+        imgResizeRate=0.8
         flag = False
         if isOpen == True:
             isRunning = True
@@ -629,9 +634,30 @@ class means:
 
     def allFingers(self):
         MessageText("開始採集所有手指\r\n")
-        for i in fingers_text:
+        for i in left_fingers_text:
             print(i+"\r\n")
             MessageText(i+"\r\n")
+            fingers_label.config(text="採集"+i)
+            fingers_label.text=i
+            print(i+' '+fingers_label.text+"\r\n")
+            mean = means()  # 事件类
+            open_thread = threading.Thread(target=mean.RollStart)
+            open_thread.start()
+            open_thread.join()
+
+        for i in right_fingers_text:
+            MessageText(i+"\r\n")
+            fingers_label.config(text="採集"+i)
+            fingers_label.text=i
+            print(i+' '+fingers_label.text+"\r\n")
+            mean = means()  # 事件类
+            open_thread = threading.Thread(target=mean.RollStart)
+            open_thread.start()
+            open_thread.join()
+        MessageText("採集結束\r\n")
+        fingers_label.text="採集結束"
+
+        fingers_label.config(text="採集結束")
 #endregion
 
 #region auxiliaryMeans
@@ -814,7 +840,7 @@ class FingerprintLibrary:
         self.Finger.heading("Template", text="Template")
         self.Finger.column("FingerID", width=250)  # #设置列
         self.Finger.column("Template", width=450)
-        self.Finger.place(relx=0.025, rely=0.75)
+        self.Finger.place(relx=0.02, rely=0.75)
         self.Finger.bind('<ButtonRelease-1>', self.treeviewClick)  # 绑定单击离开事件===========
 
     # 获取当前点击行的值
