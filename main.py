@@ -141,9 +141,6 @@ def showImage1(root):
         left_label.place(relx=0.25 + i*0.15, rely=0.05)
         right_label.place(relx=0.25 + i*0.15, rely=0.5)
 
-        # left_label.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage2))
-        # right_label.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage2))
-
         left_hand_labels.append(left_label)
         right_hand_labels.append(right_label)
 
