@@ -19,11 +19,20 @@ from PIL import ImageTk,Image,ImageFilter
 import tkinter.messagebox as msgbox
 
 from PyPDF2 import PdfWriter
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+pdfmetrics.registerFont(TTFont('ChineseFont', 'word_font/Chinese/zh/msjh.ttc'))
+
 left_fingers_text=['左手小指','左手無名指','左手中指','左手食指','左手大拇指']
 right_fingers_text=['右手大拇指','右手食指','右手中指','右手無名指','右手小指']
 
 global left_hand, left_Pinky, left_Ring, left_Middle, left_Index, left_Thumb
 global right_hand, right_Thumb, right_Index, right_Middle, right_Ring, right_Pinky
+
+left_hand_labels = []
+right_hand_labels = []
 
 
 # 定义全局变量
@@ -131,8 +140,6 @@ def showImage1(root):
     lableShowImage2.place(relx=0, rely=0.5)
     lableShowImage2.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage2))
 
-    left_hand_labels = []
-    right_hand_labels = []
 
     for i in range(5):
         left_label = Label(labFrame)
@@ -305,9 +312,7 @@ class threadGroup:
     def savePDF_Button_Click(self):
         print('儲存PDF')
         MessageText("儲存PDF\r\n")
-        saveFile = SavePDFFile()
-        saveFile.run()
-    
+        SavePDFFile.create_pdf(self)
 
 #endregion
 
@@ -540,6 +545,11 @@ class means:
                     ShowImage2 = img2
                     bmpImage2 = p
         finger.config(text=text, image=self.finger_images[-1], compound=tkinter.BOTTOM)
+        image_format = roiImg.format
+        print(f"圖片格式: {image_format}")
+                    
+        # finger_image = PhotoImage(data=finger.tk.call(finger._w, "image", "-data", finger._w))
+        # finger.config(text=text, image=finger_image, compound=tkinter.BOTTOM)
 
     
     # 注册
@@ -1163,68 +1173,83 @@ class FTRSCAN_IMAGE_SIZE(ctypes.Structure):
 #region SaveFile
 
 
+
 class SavePDFFile:
     def __init__(self):
-        self.root = Tk()
-        self.root.title("PDF File Save App")
-        self.root.geometry("600x250")  # 設定視窗大小
+        self.finger_images = []
 
-        # 使用者介面元件
-        choose_folder_button = Button(self.root, text="選擇資料夾", command=self.choose_folder, font=("Arial", 14))
-        choose_folder_button.pack(pady=15)
+    def create_pdf(self):
+        # 使用 filedialog.asksaveasfilename 讓使用者選擇 PDF 的名稱
+        pdf_filename = filedialog.asksaveasfilename(
+            initialdir=os.getcwd(),
+            title="儲存為",
+            filetypes=[("PDF files", "*.pdf")],
+            defaultextension=".pdf"
+        )
 
-        self.folder_path = None
-
-        folder_name_label = Label(self.root, text="輸入 PDF 檔案名稱:", font=("Arial", 14))
-        folder_name_label.pack()
-
-        self.folder_name_entry = Entry(self.root, font=("Arial", 14))
-        self.folder_name_entry.pack(pady=10)
-
-        save_button = Button(self.root, text="建立新PDF", command=self.create_new_pdf, font=("Arial", 14))
-        save_button.pack(pady=15)
-
-        self.status_var = StringVar()
-        self.status_label = Label(self.root, textvariable=self.status_var, font=("Arial", 14))
-        self.status_label.pack(pady=15)
-
-    def choose_folder(self):
-        folder_path = filedialog.askdirectory(initialdir=os.getcwd(), title="選擇資料夾")
-
-        if not folder_path:
-            print("請選擇資料夾。")
-            return
-
-        self.folder_path = folder_path
-
-    def create_new_pdf(self):
-        if not self.folder_path:
-            print("請先選擇資料夾。")
-            return
-
-        folder_name = self.folder_name_entry.get().strip()
-
-        if not folder_name:
+        if not pdf_filename:
             print("請輸入 PDF 檔案名稱。")
+            MessageText("請輸入 PDF 檔案名稱。\r\n")
             return
 
-        # 完整的輸出 PDF 檔案路徑（資料夾 + 檔案名稱）
-        output_pdf_path = os.path.join(self.folder_path, f"{folder_name}.pdf")
+        # 使用 reportlab 來建立 PDF
+        pdf_canvas = canvas.Canvas(pdf_filename)
+        page_width, page_height = pdf_canvas._pagesize
 
-        # 建立新的 PDF
-        pdf_writer = PdfWriter()
+        # 左手
+        for i, label in enumerate(left_hand_labels):
+            text = label.cget("text")
+            y_position = page_height * 0.75
+            pdf_canvas.setFont('ChineseFont', 12)
+            pdf_canvas.drawString(100, y_position, text)
 
-        with open(output_pdf_path, 'wb') as output_file:
-            pdf_writer.write(output_file)
+            # 取得 Label 的圖片，儲存到 PDF
+            image_data = label.cget("image")
+            image_path = SavePDFFile.save_photo_image_to_file(image_data, f"fingerCache/{text}.bmp")
+            photo_image = SavePDFFile.load_image(image_path)
+            pdf_canvas.drawInlineImage(photo_image, 300, y_position - 25, width=100, height=50)
+            pdf_canvas.showPage()  # 換頁
 
-        print(f"成功建立新的 PDF 檔案至 {output_pdf_path}")
+        # 右手
+        for i, label in enumerate(right_hand_labels):
+            text = label.cget("text")
+            y_position = page_height * 0.75
+            pdf_canvas.setFont('ChineseFont', 12)
+            pdf_canvas.drawString(100, y_position, text)
 
-        self.status_var.set(f"成功建立新的 PDF 檔案至 {output_pdf_path}")
-        self.root.after(2000, self.root.destroy)  # 2秒後關閉視窗
+            # 取得 Label 的圖片，儲存到 PDF
+            image_data = label.cget("image")
+            image_path = SavePDFFile.save_photo_image_to_file(image_data, f"fingerCache/{text}.bmp")
+            photo_image = SavePDFFile.load_image(image_path)
+            pdf_canvas.drawInlineImage(photo_image, 300, y_position - 25, width=100, height=50)
+            pdf_canvas.showPage()  # 換頁
 
-    def run(self):
-        # 啟動 Tkinter 主迴圈
-        self.root.mainloop()
+        pdf_canvas.save()
+
+        print(f"成功建立新的 PDF 檔案至 {pdf_filename}")
+        MessageText(f"成功建立新的 PDF 檔案至 {pdf_filename}\r\n")
+
+    @staticmethod
+    def save_photo_image_to_file(photo_image, filename):
+        """
+        將 PhotoImage 保存為 BMP 檔案
+        """
+        # 將 PhotoImage 轉換為 Image
+        image = ImageTk.getimage(photo_image)
+
+        # 保存 Image 為 BMP 檔案
+        image.save(filename, format="BMP")
+
+        return filename
+
+    @staticmethod
+    def load_image(filename):
+        """
+        從檔案載入圖片，轉換為 PhotoImage
+        """
+        image = Image.open(filename)
+        return ImageTk.PhotoImage(image)
+
 #endregion
 
 if __name__ == '__main__':
