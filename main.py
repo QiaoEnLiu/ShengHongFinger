@@ -127,17 +127,17 @@ def showImage1(root):
     labFrame.place(relx=0.4, rely=0.01)
 
     fingers_label = Label(labFrame,text='手指',font=(None,12))
-    fingers_label.place(relx=0, rely=0)
+    fingers_label.place(relx=1, rely=0, anchor='e')
 
     
     lableShowImage1 = Label(labFrame)  # 包含图片的标签
     lableShowImage1.config(text=' ',compound=tkinter.BOTTOM)
-    lableShowImage1.place(relx=0, rely=0.05)
+    lableShowImage1.place(relx=0, rely=0.025)
     lableShowImage1.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage1))
 
     lableShowImage2 = Label(labFrame)  # 包含图片的标签
     lableShowImage2.config(text=' ',compound=tkinter.BOTTOM)
-    lableShowImage2.place(relx=0, rely=0.5)
+    lableShowImage2.place(relx=0, rely=0.525)
     lableShowImage2.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage2))
 
 
@@ -145,8 +145,8 @@ def showImage1(root):
         left_label = Label(labFrame)
         right_label = Label(labFrame)
 
-        left_label.place(relx=0.25 + i*0.15, rely=0.05)
-        right_label.place(relx=0.25 + i*0.15, rely=0.5)
+        left_label.place(relx=0.25 + i*0.15, rely=0.025)
+        right_label.place(relx=0.25 + i*0.15, rely=0.525)
 
         left_hand_labels.append(left_label)
         right_hand_labels.append(right_label)
@@ -546,7 +546,16 @@ class means:
                     bmpImage2 = p
         finger.config(text=text, image=self.finger_images[-1], compound=tkinter.BOTTOM)
         image_format = roiImg.format
-        print(f"圖片格式: {image_format}")
+        print(f"圖片格式: {text}.{image_format}")
+        MessageText(f"圖片格式: {text}.{image_format}\r\n")
+        if bmpImage2 is not None:
+            output_path = f'fingerCache/{text}.bmp'  # 替換成你想保存的路徑
+            bmpImage2.save(output_path)
+            print(f"圖檔已成功輸出至: {output_path}")
+            MessageText(f"圖檔已成功輸出至: {output_path}\r\n")
+        else:
+            print("未獲取有效的圖檔來進行輸出")
+            MessageText(f"未獲取有效的圖檔來進行輸出\r\n")
                     
         # finger_image = PhotoImage(data=finger.tk.call(finger._w, "image", "-data", finger._w))
         # finger.config(text=text, image=finger_image, compound=tkinter.BOTTOM)
@@ -1199,29 +1208,49 @@ class SavePDFFile:
         # 左手
         for i, label in enumerate(left_hand_labels):
             text = label.cget("text")
-            y_position = page_height * 0.75
+            y_position = page_height * 0.25  # 設置在每頁上半部分的中心
             pdf_canvas.setFont('ChineseFont', 12)
-            pdf_canvas.drawString(100, y_position, text)
+            text_width = pdf_canvas.stringWidth(text, 'ChineseFont', 12)  # 取得文字寬度
+            pdf_canvas.drawString((page_width - text_width) / 2, y_position - 30, text)  # 將 y_position 調整為文字的底線位置
 
-            # 取得 Label 的圖片，儲存到 PDF
-            image_data = label.cget("image")
-            image_path = SavePDFFile.save_photo_image_to_file(image_data, f"fingerCache/{text}.bmp")
+            # 構建圖檔路徑
+            image_path = os.path.join("fingerCache", f"{text}.bmp")
+
+            # 轉換成 PhotoImage
             photo_image = SavePDFFile.load_image(image_path)
-            pdf_canvas.drawInlineImage(photo_image, 300, y_position - 25, width=100, height=50)
+
+            # 調整插入 PDF 中的圖片，等比例縮放至寬度為 100
+            desired_width = 100
+            image_width, image_height = photo_image.width, photo_image.height
+            scale_factor = desired_width / image_width
+            scaled_width = desired_width
+            scaled_height = int(image_height * scale_factor)
+            x_position = (page_width - scaled_width) / 2
+            pdf_canvas.drawInlineImage(photo_image, x_position, y_position, width=scaled_width, height=scaled_height)
             pdf_canvas.showPage()  # 換頁
 
         # 右手
         for i, label in enumerate(right_hand_labels):
             text = label.cget("text")
-            y_position = page_height * 0.75
+            y_position = page_height * 0.25  # 設置在每頁上半部分的中心
             pdf_canvas.setFont('ChineseFont', 12)
-            pdf_canvas.drawString(100, y_position, text)
+            text_width = pdf_canvas.stringWidth(text, 'ChineseFont', 12)  # 取得文字寬度
+            pdf_canvas.drawString((page_width - text_width) / 2, y_position - 30, text)  # 將 y_position 調整為文字的底線位置
 
-            # 取得 Label 的圖片，儲存到 PDF
-            image_data = label.cget("image")
-            image_path = SavePDFFile.save_photo_image_to_file(image_data, f"fingerCache/{text}.bmp")
+            # 構建圖檔路徑
+            image_path = os.path.join("fingerCache", f"{text}.bmp")
+
+            # 轉換成 PhotoImage
             photo_image = SavePDFFile.load_image(image_path)
-            pdf_canvas.drawInlineImage(photo_image, 300, y_position - 25, width=100, height=50)
+
+            # 調整插入 PDF 中的圖片，等比例縮放至寬度為 100
+            desired_width = 100
+            image_width, image_height = photo_image.width, photo_image.height
+            scale_factor = desired_width / image_width
+            scaled_width = desired_width
+            scaled_height = int(image_height * scale_factor)
+            x_position = (page_width - scaled_width) / 2
+            pdf_canvas.drawInlineImage(photo_image, x_position, y_position, width=scaled_width, height=scaled_height)
             pdf_canvas.showPage()  # 換頁
 
         pdf_canvas.save()
@@ -1230,25 +1259,12 @@ class SavePDFFile:
         MessageText(f"成功建立新的 PDF 檔案至 {pdf_filename}\r\n")
 
     @staticmethod
-    def save_photo_image_to_file(photo_image, filename):
-        """
-        將 PhotoImage 保存為 BMP 檔案
-        """
-        # 將 PhotoImage 轉換為 Image
-        image = ImageTk.getimage(photo_image)
-
-        # 保存 Image 為 BMP 檔案
-        image.save(filename, format="BMP")
-
-        return filename
-
-    @staticmethod
     def load_image(filename):
         """
         從檔案載入圖片，轉換為 PhotoImage
         """
         image = Image.open(filename)
-        return ImageTk.PhotoImage(image)
+        return image
 
 #endregion
 
