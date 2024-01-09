@@ -8,7 +8,7 @@ import base64
 import os
 from Crypto.Cipher import AES
 from binascii import a2b_hex, b2a_hex
-from tkinter import filedialog
+from tkinter import filedialog, Tk
 import tkinter.scrolledtext
 from tkinter import ttk, simpledialog
 from tkinter import *
@@ -18,7 +18,7 @@ from io import BytesIO
 from PIL import ImageTk,Image,ImageFilter
 import tkinter.messagebox as msgbox
 
-
+from PyPDF2 import PdfWriter
 left_fingers_text=['左手小指','左手無名指','左手中指','左手食指','左手大拇指']
 right_fingers_text=['右手大拇指','右手食指','右手中指','右手無名指','右手小指']
 
@@ -197,6 +197,8 @@ def ButtonGroup(root):
     exitButton = Button(root, text='退出', width=12, height=2, font=font, command=mean.Exit)
 
     allFingersButton = Button(root, text='採集所有手指',state = state, width=12, height=2, font=(None,16), command=thread.allFingersButton_Click)
+    savePictureFile = Button(root, text='儲存圖檔',state = state, width=12, height=2, font=(None,16), command=thread.savePictureFileButton_Click)
+    savePDF = Button(root, text='儲存PDF檔',state = state, width=12, height=2, font=(None,16), command=thread.savePDF_Button_Click)
 
     # 按钮的位置，范围0-1
     openButton.place(relx=0.02, rely=0.01)
@@ -212,7 +214,9 @@ def ButtonGroup(root):
     exitButton.place(relx=0.12, rely=0.33)
 
     allFingersButton.place(relx=0.22, rely=0.01)
-    return [rollStartButton,featureButton,onCompareFingerButton,onCompareIdentifyButton,onCompareIdentifyNButton,stopButton,SingleDeleteButton,AllDeleteButton, allFingersButton]
+    savePictureFile.place(relx=0.22, rely=0.09)
+    savePDF.place(relx=0.22, rely=0.17)
+    return [rollStartButton,featureButton,onCompareFingerButton,onCompareIdentifyButton,onCompareIdentifyNButton,stopButton,SingleDeleteButton,AllDeleteButton, allFingersButton, savePictureFile, savePDF]
 #endregion
 
 #region threadGroup
@@ -263,7 +267,6 @@ class threadGroup:
     #zh-tw 我後來改了程式碼這是在threadGroup類別底下
     def allFingersButton_Click(self):
         print('採集所有手指')
-
         MessageText("開始採集所有手指\r\n")
 
         # 左手指紋採集
@@ -294,6 +297,17 @@ class threadGroup:
         MessageText("所有手指採集結束\r\n")
         fingers_label.text="所有手指採集結束"
         fingers_label.config(text="所有手指採集結束")
+
+    def savePictureFileButton_Click(self):
+        print('儲存圖檔')
+        MessageText("儲存圖檔\r\n")
+
+    def savePDF_Button_Click(self):
+        print('儲存PDF')
+        MessageText("儲存PDF\r\n")
+        saveFile = SavePDFFile()
+        saveFile.run()
+    
 
 #endregion
 
@@ -1146,6 +1160,72 @@ class FTRSCAN_IMAGE_SIZE(ctypes.Structure):
     ]
 #endregion
 
+#region SaveFile
+
+
+class SavePDFFile:
+    def __init__(self):
+        self.root = Tk()
+        self.root.title("PDF File Save App")
+        self.root.geometry("600x250")  # 設定視窗大小
+
+        # 使用者介面元件
+        choose_folder_button = Button(self.root, text="選擇資料夾", command=self.choose_folder, font=("Arial", 14))
+        choose_folder_button.pack(pady=15)
+
+        self.folder_path = None
+
+        folder_name_label = Label(self.root, text="輸入 PDF 檔案名稱:", font=("Arial", 14))
+        folder_name_label.pack()
+
+        self.folder_name_entry = Entry(self.root, font=("Arial", 14))
+        self.folder_name_entry.pack(pady=10)
+
+        save_button = Button(self.root, text="建立新PDF", command=self.create_new_pdf, font=("Arial", 14))
+        save_button.pack(pady=15)
+
+        self.status_var = StringVar()
+        self.status_label = Label(self.root, textvariable=self.status_var, font=("Arial", 14))
+        self.status_label.pack(pady=15)
+
+    def choose_folder(self):
+        folder_path = filedialog.askdirectory(initialdir=os.getcwd(), title="選擇資料夾")
+
+        if not folder_path:
+            print("請選擇資料夾。")
+            return
+
+        self.folder_path = folder_path
+
+    def create_new_pdf(self):
+        if not self.folder_path:
+            print("請先選擇資料夾。")
+            return
+
+        folder_name = self.folder_name_entry.get().strip()
+
+        if not folder_name:
+            print("請輸入 PDF 檔案名稱。")
+            return
+
+        # 完整的輸出 PDF 檔案路徑（資料夾 + 檔案名稱）
+        output_pdf_path = os.path.join(self.folder_path, f"{folder_name}.pdf")
+
+        # 建立新的 PDF
+        pdf_writer = PdfWriter()
+
+        with open(output_pdf_path, 'wb') as output_file:
+            pdf_writer.write(output_file)
+
+        print(f"成功建立新的 PDF 檔案至 {output_pdf_path}")
+
+        self.status_var.set(f"成功建立新的 PDF 檔案至 {output_pdf_path}")
+        self.root.after(2000, self.root.destroy)  # 2秒後關閉視窗
+
+    def run(self):
+        # 啟動 Tkinter 主迴圈
+        self.root.mainloop()
+#endregion
 
 if __name__ == '__main__':
     # icoImage()
