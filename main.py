@@ -36,6 +36,8 @@ global right_hand, right_Thumb, right_Index, right_Middle, right_Ring, right_Pin
 left_hand_labels = []
 right_hand_labels = []
 
+stop_all_threads = False
+
 
 # 定义全局变量
 global root,text,KEY,SN_list, isOpen, isRunning,feature,\
@@ -91,7 +93,7 @@ else:
         dllinfo="ftrScanAPI.dll不存在\r\n"
 
 
-
+#region Cache
 def clear_finger_cache():
     cacheInfo=""
     try:
@@ -127,9 +129,7 @@ def clear_finger_cache():
         cacheInfo="資料夾不存在：{target_folder_path}\r\n"
 
     MessageText(cacheInfo)
-    
-
-
+#endregion
 
 #region UI
 def UI():
@@ -164,7 +164,6 @@ def update_image(label, image, photo):
 
 
 #region 滚动采集图片框
-#zh-tw 這是顯示圖片的UI
 def showImage1(root):
     global fingers_label, left_hand, right_hand, lableShowImage1, lableShowImage2, bmpImage1, bmpImage2
     # auxiliary = auxiliaryMeans()
@@ -284,6 +283,7 @@ def ButtonGroup(root):
 
 #region threadGroup
 class threadGroup:
+    
     def rollStartButton_Click(self):
         mean = means()  # 事件类
         open_thread = threading.Thread(target=mean.RollStart)
@@ -329,54 +329,55 @@ class threadGroup:
 
     #zh-tw
     def allFingersButton_Click(self):
+        global stop_all_threads
+        stop_all_threads=False
+        self.current_finger_index = 0
+        self.all_finger_text = left_fingers_text + right_fingers_text
+        self.all_finger = left_hand + right_hand
+
+        # 創建 Means 實例
+        def start_finger_collection():
+            global stop_all_threads
+            if not stop_all_threads and self.current_finger_index < len(self.all_finger):
+                fingers_text = self.all_finger_text[self.current_finger_index]
+                finger = self.all_finger[self.current_finger_index]
+
+                fingers_label.config(text="採集" + fingers_text)
+                fingers_label.text = fingers_text
+                print(fingers_text + "\r\n")
+                MessageText(fingers_text + "\r\n")
+
+                current_means = means()
+
+                # 檢查是否應該停止
+                if not stop_all_threads:
+                    open_thread = threading.Thread(target=current_means.RollStartAllFingers, args=(finger, fingers_text))
+                    open_thread.start()
+
+                    # 定期檢查執行緒是否完成
+                    check_thread_completion(open_thread)
+                else:
+                    print("手動停止\r\n")
+                    MessageText("手動停止\r\n")
+
+        def check_thread_completion(thread):
+            if thread.is_alive() and not stop_all_threads:
+                # 執行緒還在執行中，定時檢查
+                root.after(10, lambda: check_thread_completion(thread))
+            else:
+                # 執行緒已完成，進行下一次迴圈
+                self.current_finger_index += 1
+                root.after(10, start_finger_collection)
+
         clear_finger_cache()
         print('採集所有手指')
         MessageText("開始採集所有手指\r\n")
 
-        all_finger_text = left_fingers_text + right_fingers_text
-        all_finger = left_hand + right_hand
-
-        for i in all_finger:
+        for i in self.all_finger:
             i.config(text='', image='')
 
         # 左右手指紋採集
-        all_threads = []  # 存儲所有手指的執行緒
-
-        
-        for j, fingers_text in enumerate(all_finger_text):
-            fingers_label.config(text="採集" + fingers_text)
-            fingers_label.text = fingers_text
-            print(fingers_text + "\r\n")
-            MessageText(fingers_text + "\r\n")
-
-            # 創建 means 實例
-            current_means = means()
-
-            # 創建執行緒，並開始執行
-            open_thread = threading.Thread(target=current_means.RollStartAllFingers(all_finger[j], fingers_text))
-            
-            open_thread.start()
-
-            # 等待執行緒完成
-            open_thread.join()
-
-    # 在這裡可以添加下一次迭代需要的程式碼
-
-            
-            # open_thread.join()
-            
-            # all_threads.append(open_thread)
-
-        # 等待所有手指的執行緒都完成
-        # for thread in all_threads:
-        #     thread.join()
-
-        # ButtonGroup.savePDF.config(state=NORMAL)
-
-        print("所有手指採集結束\r\n")
-        MessageText("所有手指採集結束\r\n")
-        fingers_label.text = "所有手指採集結束"
-        fingers_label.config(text="所有手指採集結束")
+        start_finger_collection()
 
     def systemLogButton_Click(self):
         # print('系統日誌')
@@ -482,7 +483,7 @@ class means:
         baseImage = None
         WMRAPI.SetOptions()
         startTime = datetime.datetime.now()
-        imgResizeRate=0.75
+        imgResizeRate=0.82
         flag = False
         if isOpen == True:
             isRunning = True
@@ -554,8 +555,7 @@ class means:
         baseImage = None
         WMRAPI.SetOptions()
         startTime = datetime.datetime.now()
-        imgResizeRate=0.75
-        flag = False
+        imgResizeRate=0.82
         if isOpen == True:
             isRunning = True
             flag = True
@@ -882,7 +882,7 @@ class means:
         logRoot.title("系統日誌")
 
         # 創建 ScrolledText 元件
-        scrolled_text = tkinter.scrolledtext.ScrolledText(logRoot, wrap=tkinter.WORD, width=75, height=75)
+        scrolled_text = tkinter.scrolledtext.ScrolledText(logRoot, wrap=tkinter.WORD, width=75, height=65)
         scrolled_text.pack(padx=10, pady=10)
 
         # 設置初始文本
@@ -892,7 +892,8 @@ class means:
         logRoot.mainloop()
 
     def Stop(self):
-        global isRunning
+        global isRunning, stop_all_threads
+        stop_all_threads = True
         if isOpen == True:
             isRunning = False
             print("已停止..\r\n")
@@ -1287,6 +1288,33 @@ class SavePDFFile:
         self.finger_images = []
 
     def create_pdf(self):
+
+        fingers=left_fingers_text+right_fingers_text
+        allFingers=[]
+
+        # 檢查 'finger' 資料夾中是否有指定檔案，有的話就加入 allHand
+        for label_text in fingers:
+            image_path = os.path.join("fingerCache", f"{label_text}.bmp")
+            if os.path.exists(image_path):
+                allFingers.append(label_text)
+                print(f"'{label_text}.bmp' 存在於 'fingerCache' 資料夾中")
+                MessageText(f"'{label_text}.bmp' 存在於 'fingerCache' 資料夾中\r\n")
+            else:
+                print(f"警告：'{label_text}.bmp' 不存在於 'fingerCache' 資料夾中")
+                MessageText(f"警告：'{label_text}.bmp' 不存在於 'fingerCache' 資料夾中\r\n")
+
+        # 檢查指紋數量是否滿十枚
+        if len(allFingers) < 10:
+            warning_message = "指紋數量不足十枚，無法建立完整手指 PDF。"
+            print(warning_message)
+            MessageText(f"{warning_message}\r\n")
+
+            # 顯示警告視窗
+            tkinter.messagebox.showwarning("警告", warning_message)
+            return
+
+           
+
         # 使用 filedialog.asksaveasfilename 讓使用者選擇 PDF 的名稱
         pdf_filename = filedialog.asksaveasfilename(
             initialdir=os.getcwd(),
@@ -1304,37 +1332,13 @@ class SavePDFFile:
         pdf_canvas = canvas.Canvas(pdf_filename)
         page_width, page_height = pdf_canvas._pagesize
 
-        # 左手
-        for i, label in enumerate(left_hand_labels):
+        # 左手、右手
+        for i, label in enumerate(allHand):
             text = label.cget("text")
             y_position = page_height * 0.25  # 設置在每頁上半部分的中心
-            pdf_canvas.setFont('ChineseFont', 12)
-            text_width = pdf_canvas.stringWidth(text, 'ChineseFont', 24)  # 取得文字寬度
-            pdf_canvas.drawString((page_width - text_width) / 2, y_position - 30, text)  # 將 y_position 調整為文字的底線位置
-
-            # 構建圖檔路徑
-            image_path = os.path.join("fingerCache", f"{text}.bmp")
-
-            # 轉換成 PhotoImage
-            photo_image = SavePDFFile.load_image(image_path)
-
-            # 調整插入 PDF 中的圖片，等比例縮放至寬度為 100
-            desired_width = 400
-            image_width, image_height = photo_image.width, photo_image.height
-            scale_factor = desired_width / image_width
-            scaled_width = desired_width
-            scaled_height = int(image_height * scale_factor)
-            x_position = (page_width - scaled_width) / 2
-            pdf_canvas.drawInlineImage(photo_image, x_position, y_position, width=scaled_width, height=scaled_height)
-            pdf_canvas.showPage()  # 換頁
-
-        # 右手
-        for i, label in enumerate(right_hand_labels):
-            text = label.cget("text")
-            y_position = page_height * 0.25  # 設置在每頁上半部分的中心
-            pdf_canvas.setFont('ChineseFont', 12)
-            text_width = pdf_canvas.stringWidth(text, 'ChineseFont', 24)  # 取得文字寬度
-            pdf_canvas.drawString((page_width - text_width) / 2, y_position - 30, text)  # 將 y_position 調整為文字的底線位置
+            pdf_canvas.setFont('ChineseFont', 48)
+            text_width = pdf_canvas.stringWidth(text, 'ChineseFont')  # 取得文字寬度
+            pdf_canvas.drawString((page_width - text_width) / 2, y_position-60, text)  # 將 y_position 調整為文字的底線位置
 
             # 構建圖檔路徑
             image_path = os.path.join("fingerCache", f"{text}.bmp")
