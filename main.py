@@ -1,31 +1,46 @@
-import ctypes
-from ctypes import *
-import threading
-import numpy as np
-import re
-import datetime
-import base64
-import os
-from Crypto.Cipher import AES
-from binascii import a2b_hex, b2a_hex
-from tkinter import filedialog, Tk
-import tkinter.scrolledtext
-from tkinter import ttk, simpledialog
-from tkinter import *
-import tkinter
-import sqlite3
-from io import BytesIO
-from PIL import ImageTk,Image,ImageFilter
-import tkinter.messagebox as msgbox
+try:
+    import ctypes
+    from ctypes import *
+    import threading
+    import numpy as np
+    import re
+    import datetime
+    import base64
+    import os
+    from Crypto.Cipher import AES
 
-from PyPDF2 import PdfWriter
-from reportlab.pdfgen import canvas
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+    from binascii import a2b_hex, b2a_hex
+    from tkinter import filedialog, Tk
+    import tkinter.scrolledtext
+    from tkinter import ttk, simpledialog
+    from tkinter import *
+    import tkinter
+    import sqlite3
+    from io import BytesIO
+    from PIL import ImageTk,Image,ImageFilter
+    import tkinter.messagebox as msgbox
 
-import shutil, tempfile
+    from PyPDF2 import PdfWriter
+    from reportlab.pdfgen import canvas
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
 
-pdfmetrics.registerFont(TTFont('ChineseFont', 'word_font/Chinese/zh/msjh.ttc'))
+    from pkg_resources import resource_filename
+
+    import shutil, tempfile, traceback
+
+
+    # font_path = os.path.join('word_font', 'Chinese', 'zh', 'msjh.ttc')
+    font_path = resource_filename(__name__, 'word_font/msjh.ttc')
+    print(font_path)
+
+
+    pdfmetrics.registerFont(TTFont('ChineseFont', font_path))
+
+except Exception as e:
+    print(f"An error occurred: {e}")
+    traceback.print_exc()
+    input("Press Enter to exit")
 
 left_fingers_text=['左手小指','左手無名指','左手中指','左手食指','左手大拇指']
 right_fingers_text=['右手大拇指','右手食指','右手中指','右手無名指','右手小指']
@@ -119,14 +134,14 @@ def clear_finger_cache():
                 elif os.path.isdir(item_path):
                     shutil.rmtree(item_path)
 
-            print(f"成功清空資料夾內容：{target_folder_path}")
-            cacheInfo="成功清空資料夾內容：{target_folder_path}\r\n"
+            print(f'成功清空資料夾內容：{target_folder_path}')
+            cacheInfo=f'成功清空資料夾內容：{target_folder_path}\r\n'
         else:
-            print(f"資料夾不存在：{target_folder_path}")
-            cacheInfo="資料夾不存在：{target_folder_path}\r\n"
+            print(f'資料夾不存在：{target_folder_path}')
+            cacheInfo=f'資料夾不存在：{target_folder_path}\r\n'
     except Exception as e:
-        print(f"清空資料夾內容時發生錯誤：{e}")
-        cacheInfo="資料夾不存在：{target_folder_path}\r\n"
+        print(f'清空資料夾內容時發生錯誤：{e}')
+        cacheInfo=f'資料夾不存在：{target_folder_path}\r\n'
 
     MessageText(cacheInfo)
 #endregion
@@ -1290,6 +1305,7 @@ class SavePDFFile:
     def create_pdf(self):
 
         fingers=left_fingers_text+right_fingers_text
+        all_fingers_labels=left_hand_labels+right_hand_labels
         allFingers=[]
 
         # 檢查 'finger' 資料夾中是否有指定檔案，有的話就加入 allHand
@@ -1333,7 +1349,7 @@ class SavePDFFile:
         page_width, page_height = pdf_canvas._pagesize
 
         # 左手、右手
-        for i, label in enumerate(allHand):
+        for i, label in enumerate(all_fingers_labels):
             text = label.cget("text")
             y_position = page_height * 0.25  # 設置在每頁上半部分的中心
             pdf_canvas.setFont('ChineseFont', 48)
