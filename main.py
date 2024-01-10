@@ -23,6 +23,8 @@ from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
+import shutil, tempfile
+
 pdfmetrics.registerFont(TTFont('ChineseFont', 'word_font/Chinese/zh/msjh.ttc'))
 
 left_fingers_text=['左手小指','左手無名指','左手中指','左手食指','左手大拇指']
@@ -88,8 +90,50 @@ else:
     else:
         dllinfo="ftrScanAPI.dll不存在\r\n"
 
+
+
+def clear_finger_cache():
+    cacheInfo=""
+    try:
+        # 定義目標資料夾名稱
+        target_folder_name = "fingerCache"
+
+        # 建立完整的資料夾路徑
+        target_folder_path = os.path.join(os.getcwd(), target_folder_name)
+
+        # 檢查資料夾是否存在
+        if os.path.exists(target_folder_path):
+            # 獲取資料夾內所有檔案及子資料夾
+            folder_content = os.listdir(target_folder_path)
+
+            # 刪除每個檔案
+            for item in folder_content:
+                item_path = os.path.join(target_folder_path, item)
+                
+                # 如果是檔案，則刪除
+                if os.path.isfile(item_path):
+                    os.remove(item_path)
+                # 如果是資料夾，則遞迴清空
+                elif os.path.isdir(item_path):
+                    shutil.rmtree(item_path)
+
+            print(f"成功清空資料夾內容：{target_folder_path}")
+            cacheInfo="成功清空資料夾內容：{target_folder_path}\r\n"
+        else:
+            print(f"資料夾不存在：{target_folder_path}")
+            cacheInfo="資料夾不存在：{target_folder_path}\r\n"
+    except Exception as e:
+        print(f"清空資料夾內容時發生錯誤：{e}")
+        cacheInfo="資料夾不存在：{target_folder_path}\r\n"
+
+    MessageText(cacheInfo)
+    
+
+
+
 #region UI
 def UI():
+    
     auxiliary=auxiliaryMeans()
     mean=means()
     root.title('WMR08-Plus')  # 窗口名称
@@ -103,9 +147,10 @@ def UI():
 
     ButtonGroup(root)
     messageScrolledText(root)  # 调用信息框
-    FingerprintLibrary()
+    # FingerprintLibrary()
     showImage1(root)  # 调用滚动采集图片框
-    showImage2(root)  # 调用图片框
+    # showImage2(root)  # 调用图片框
+    clear_finger_cache()
     root.mainloop()  # 显示图形化界面
 #endregion
 
@@ -122,31 +167,31 @@ def update_image(label, image, photo):
 #zh-tw 這是顯示圖片的UI
 def showImage1(root):
     global fingers_label, left_hand, right_hand, lableShowImage1, lableShowImage2, bmpImage1, bmpImage2
-    auxiliary = auxiliaryMeans()
-    labFrame = LabelFrame(root, text="滚动采集指纹图像", relief=GROOVE, width=1000, height=500,font=(None,20))  # 设置图片样式
-    labFrame.place(relx=0.4, rely=0.01)
+    # auxiliary = auxiliaryMeans()
+    labFrame = LabelFrame(root, text="滚动采集指纹图像", relief=GROOVE, width=1875, height=950,font=(None,20))  # 设置图片样式
+    labFrame.place(relx=0.01, rely=0.1)
 
-    fingers_label = Label(labFrame,text='手指',font=(None,12))
+    fingers_label = Label(labFrame,text='手指',font=(None,16))
     fingers_label.place(relx=1, rely=0, anchor='e')
 
     
     lableShowImage1 = Label(labFrame)  # 包含图片的标签
-    lableShowImage1.config(text=' ',compound=tkinter.BOTTOM)
+    lableShowImage1.config(text='每幀圖測試',compound=tkinter.BOTTOM,font=(None,20))
     lableShowImage1.place(relx=0, rely=0.025)
-    lableShowImage1.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage1))
+    # lableShowImage1.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage1))
 
     lableShowImage2 = Label(labFrame)  # 包含图片的标签
-    lableShowImage2.config(text=' ',compound=tkinter.BOTTOM)
+    lableShowImage2.config(text='每幀圖合成',compound=tkinter.BOTTOM,font=(None,20))
     lableShowImage2.place(relx=0, rely=0.525)
-    lableShowImage2.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage2))
+    # lableShowImage2.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage2))
 
 
     for i in range(5):
-        left_label = Label(labFrame)
-        right_label = Label(labFrame)
+        left_label = Label(labFrame,font=(None,20))
+        right_label = Label(labFrame,font=(None,20))
 
-        left_label.place(relx=0.25 + i*0.15, rely=0.025)
-        right_label.place(relx=0.25 + i*0.15, rely=0.525)
+        left_label.place(relx=0.15 + i*0.15, rely=0.025)
+        right_label.place(relx=0.15 + i*0.15, rely=0.525)
 
         left_hand_labels.append(left_label)
         right_hand_labels.append(right_label)
@@ -176,9 +221,9 @@ def showImage2(root):
 #region messageScrolledText
 def messageScrolledText(root):
     global text
-    text = tkinter.scrolledtext.ScrolledText(root, width=86, height=15)  # 设置信息框样式
+    text = tkinter.scrolledtext.ScrolledText(root, width=75, height=5)  # 设置信息框样式
     # text.configure(font=("Arial", 20))
-    text.place(relx=0.02, rely=0.45)
+    text.place(relx=1, rely=0.01, anchor='ne')
     text.see(END)  # 信息框处于滚动条最下面信息的位置
     return text
 #endregion
@@ -203,27 +248,38 @@ def ButtonGroup(root):
     AllDeleteButton = Button(root, text='清空指纹库', state=state, width=12, height=2, font=font,command=mean.AllDelete)
     exitButton = Button(root, text='退出', width=12, height=2, font=font, command=mean.Exit)
 
+    systemLogButton = Button(root, text='系統日誌', width=12, height=2, font=(None,16), command=thread.systemLogButton_Click)
     allFingersButton = Button(root, text='採集所有手指',state = state, width=12, height=2, font=(None,16), command=thread.allFingersButton_Click)
     savePictureFile = Button(root, text='儲存圖檔',state = state, width=12, height=2, font=(None,16), command=thread.savePictureFileButton_Click)
-    savePDF = Button(root, text='儲存PDF檔',state = state, width=12, height=2, font=(None,16), command=thread.savePDF_Button_Click)
+    savePDF = Button(root, text='儲存PDF檔',state = tkinter.DISABLED, width=12, height=2, font=(None,16), command=thread.savePDF_Button_Click)
 
     # 按钮的位置，范围0-1
-    openButton.place(relx=0.02, rely=0.01)
-    featureButton.place(relx=0.02, rely=0.09)
-    onCompareFingerButton.place(relx=0.02, rely=0.17)
-    onCompareIdentifyButton.place(relx=0.02, rely=0.25)
-    onCompareIdentifyNButton.place(relx=0.02, rely=0.33)
+    # openButton.place(relx=0.02, rely=0.01)
+    # featureButton.place(relx=0.02, rely=0.09)
+    # onCompareFingerButton.place(relx=0.02, rely=0.17)
+    # onCompareIdentifyButton.place(relx=0.02, rely=0.25)
+    # onCompareIdentifyNButton.place(relx=0.02, rely=0.33)
 
-    rollStartButton.place(relx=0.12, rely=0.01)
-    stopButton.place(relx=0.12, rely=0.09)
-    SingleDeleteButton.place(relx=0.12, rely=0.17)
-    AllDeleteButton.place(relx=0.12, rely=0.25)
-    exitButton.place(relx=0.12, rely=0.33)
+    # rollStartButton.place(relx=0.12, rely=0.01)
+    # stopButton.place(relx=0.12, rely=0.09)
+    # SingleDeleteButton.place(relx=0.12, rely=0.17)
+    # AllDeleteButton.place(relx=0.12, rely=0.25)
+    # exitButton.place(relx=0.12, rely=0.33)
 
-    allFingersButton.place(relx=0.22, rely=0.01)
-    savePictureFile.place(relx=0.22, rely=0.09)
-    savePDF.place(relx=0.22, rely=0.17)
-    return [rollStartButton,featureButton,onCompareFingerButton,onCompareIdentifyButton,onCompareIdentifyNButton,stopButton,SingleDeleteButton,AllDeleteButton, allFingersButton, savePictureFile, savePDF]
+    # allFingersButton.place(relx=0.22, rely=0.01)
+    # savePictureFile.place(relx=0.22, rely=0.09)
+    # savePDF.place(relx=0.22, rely=0.17)
+
+
+    openButton.place(relx=0.01, rely=0.01)
+    rollStartButton.place(relx=0.10, rely=0.01)
+    allFingersButton.place(relx=0.19, rely=0.01)
+    stopButton.place(relx=0.28, rely=0.01)
+    savePDF.place(relx=0.37, rely=0.01)
+    systemLogButton.place(relx=0.46, rely=0.01)
+    exitButton.place(relx=0.55, rely=0.01)
+
+    return [rollStartButton,featureButton,onCompareFingerButton,onCompareIdentifyButton,onCompareIdentifyNButton,stopButton,SingleDeleteButton,AllDeleteButton, allFingersButton,savePDF]
 #endregion
 
 #region threadGroup
@@ -271,39 +327,63 @@ class threadGroup:
         verify_thread = threading.Thread(target=mean.onCompareIdentifyN)
         verify_thread.start()
 
-    #zh-tw 我後來改了程式碼這是在threadGroup類別底下
+    #zh-tw
     def allFingersButton_Click(self):
+        clear_finger_cache()
         print('採集所有手指')
         MessageText("開始採集所有手指\r\n")
 
-        # 左手指紋採集
-        left_hand_means = [means() for _ in range(len(left_fingers_text))]
-        for i in range(len(left_fingers_text)):
-            print(left_fingers_text[i]+"\r\n")
-            MessageText(left_fingers_text[i]+"\r\n")
-            fingers_label.config(text="採集"+left_fingers_text[i])
-            fingers_label.text=left_fingers_text[i]
-            print(left_fingers_text[i]+' '+fingers_label.text+"\r\n")
-            open_thread = threading.Thread(target=left_hand_means[i].RollStartAllFingers(left_hand[i],fingers_label.text))
+        all_finger_text = left_fingers_text + right_fingers_text
+        all_finger = left_hand + right_hand
+
+        for i in all_finger:
+            i.config(text='', image='')
+
+        # 左右手指紋採集
+        all_threads = []  # 存儲所有手指的執行緒
+
+        
+        for j, fingers_text in enumerate(all_finger_text):
+            fingers_label.config(text="採集" + fingers_text)
+            fingers_label.text = fingers_text
+            print(fingers_text + "\r\n")
+            MessageText(fingers_text + "\r\n")
+
+            # 創建 means 實例
+            current_means = means()
+
+            # 創建執行緒，並開始執行
+            open_thread = threading.Thread(target=current_means.RollStartAllFingers(all_finger[j], fingers_text))
+            
             open_thread.start()
+
+            # 等待執行緒完成
             open_thread.join()
 
-        # 右手指紋採集
-        right_hand_means = [means() for _ in range(len(right_fingers_text))]
-        for i in range(len(right_fingers_text)):
-            print(right_fingers_text[i]+"\r\n")
-            MessageText(right_fingers_text[i]+"\r\n")
-            fingers_label.config(text="採集"+right_fingers_text[i])
-            fingers_label.text=right_fingers_text[i]
-            print(right_fingers_text[i]+' '+fingers_label.text+"\r\n")
-            open_thread = threading.Thread(target=right_hand_means[i].RollStartAllFingers(right_hand[i],fingers_label.text))
-            open_thread.start()
-            open_thread.join()
+    # 在這裡可以添加下一次迭代需要的程式碼
+
+            
+            # open_thread.join()
+            
+            # all_threads.append(open_thread)
+
+        # 等待所有手指的執行緒都完成
+        # for thread in all_threads:
+        #     thread.join()
+
+        # ButtonGroup.savePDF.config(state=NORMAL)
 
         print("所有手指採集結束\r\n")
         MessageText("所有手指採集結束\r\n")
-        fingers_label.text="所有手指採集結束"
+        fingers_label.text = "所有手指採集結束"
         fingers_label.config(text="所有手指採集結束")
+
+    def systemLogButton_Click(self):
+        # print('系統日誌')
+        # MessageText("系統日誌\r\n")
+        mean = means()
+        verify_thread = threading.Thread(target=mean.systemLogInterface)
+        verify_thread.start()
 
     def savePictureFileButton_Click(self):
         print('儲存圖檔')
@@ -318,8 +398,6 @@ class threadGroup:
 
 #region means
 class means:
-    # def __init__(self):
-    #     self.finger_images = []  # 用於保存指紋圖片的列表
     finger_images=[]
 
 
@@ -372,8 +450,8 @@ class means:
                     if SN[2] != "":  # 设备有SN
                         if SN[2] in SN_list[1:]:
                             auxiliary.anConfig(root, tkinter.NORMAL)  # 启用按钮
-                            Fingerprint = FingerprintLibrary()
-                            Fingerprint.Select()  # 显示指纹库数据
+                            # Fingerprint = FingerprintLibrary() #暫時用不到
+                            # Fingerprint.Select()  # 显示指纹库数据
                             info = info+"打开设备成功\r\n序列号:" + SN[2]
                             isOpen = True
                             openButton.config(text="关闭设备")
@@ -404,7 +482,7 @@ class means:
         baseImage = None
         WMRAPI.SetOptions()
         startTime = datetime.datetime.now()
-        imgResizeRate=0.4
+        imgResizeRate=0.75
         flag = False
         if isOpen == True:
             isRunning = True
@@ -476,7 +554,7 @@ class means:
         baseImage = None
         WMRAPI.SetOptions()
         startTime = datetime.datetime.now()
-        imgResizeRate=0.4
+        imgResizeRate=0.75
         flag = False
         if isOpen == True:
             isRunning = True
@@ -794,12 +872,33 @@ class means:
         Fingerprint.Select()
         isRunning = False
 
+    def systemLogInterface(self):
+        global text
+        print('查看系統日誌')
+        MessageText("查看系統日誌\r\n")
+
+        # 創建主視窗
+        logRoot = tkinter.Tk()
+        logRoot.title("系統日誌")
+
+        # 創建 ScrolledText 元件
+        scrolled_text = tkinter.scrolledtext.ScrolledText(logRoot, wrap=tkinter.WORD, width=75, height=75)
+        scrolled_text.pack(padx=10, pady=10)
+
+        # 設置初始文本
+        scrolled_text.insert(tkinter.END, text.get("1.0", tkinter.END))
+
+        # 啟動主迴圈
+        logRoot.mainloop()
+
     def Stop(self):
         global isRunning
         if isOpen == True:
             isRunning = False
+            print("已停止..\r\n")
             MessageText("已停止..\r\n")
         else:
+            print("指纹设备未打开\r\n")
             MessageText("指纹设备未打开\r\n")
 
     def Exit(self):
@@ -1210,7 +1309,7 @@ class SavePDFFile:
             text = label.cget("text")
             y_position = page_height * 0.25  # 設置在每頁上半部分的中心
             pdf_canvas.setFont('ChineseFont', 12)
-            text_width = pdf_canvas.stringWidth(text, 'ChineseFont', 12)  # 取得文字寬度
+            text_width = pdf_canvas.stringWidth(text, 'ChineseFont', 24)  # 取得文字寬度
             pdf_canvas.drawString((page_width - text_width) / 2, y_position - 30, text)  # 將 y_position 調整為文字的底線位置
 
             # 構建圖檔路徑
@@ -1220,7 +1319,7 @@ class SavePDFFile:
             photo_image = SavePDFFile.load_image(image_path)
 
             # 調整插入 PDF 中的圖片，等比例縮放至寬度為 100
-            desired_width = 100
+            desired_width = 400
             image_width, image_height = photo_image.width, photo_image.height
             scale_factor = desired_width / image_width
             scaled_width = desired_width
@@ -1234,7 +1333,7 @@ class SavePDFFile:
             text = label.cget("text")
             y_position = page_height * 0.25  # 設置在每頁上半部分的中心
             pdf_canvas.setFont('ChineseFont', 12)
-            text_width = pdf_canvas.stringWidth(text, 'ChineseFont', 12)  # 取得文字寬度
+            text_width = pdf_canvas.stringWidth(text, 'ChineseFont', 24)  # 取得文字寬度
             pdf_canvas.drawString((page_width - text_width) / 2, y_position - 30, text)  # 將 y_position 調整為文字的底線位置
 
             # 構建圖檔路徑
@@ -1244,7 +1343,7 @@ class SavePDFFile:
             photo_image = SavePDFFile.load_image(image_path)
 
             # 調整插入 PDF 中的圖片，等比例縮放至寬度為 100
-            desired_width = 100
+            desired_width = 400
             image_width, image_height = photo_image.width, photo_image.height
             scale_factor = desired_width / image_width
             scaled_width = desired_width
