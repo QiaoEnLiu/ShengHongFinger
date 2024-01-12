@@ -235,7 +235,7 @@ def showImage2(root):
 #region messageScrolledText
 def messageScrolledText(root):
     global text
-    text = tkinter.scrolledtext.ScrolledText(root, width=75, height=5)  # 设置信息框样式
+    text = tkinter.scrolledtext.ScrolledText(root, width=50, height=5)  # 设置信息框样式
     # text.configure(font=("Arial", 20))
     text.place(relx=1, rely=0.01, anchor='ne')
     text.see(END)  # 信息框处于滚动条最下面信息的位置
