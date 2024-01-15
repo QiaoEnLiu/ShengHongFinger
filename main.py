@@ -355,6 +355,7 @@ def ButtonGroup(root):
 
     # systemLogButton = Button(root, text='系統日誌', width=12, height=1, font=(None,16), command=thread.systemLogButton_Click)
     allFingersButton = Button(root, text='採集所有手指',state = state, width=12, height=1, font=(None,16), command=thread.allFingersButton_Click)
+    allPictureDeleteButton = Button(root, text='刪除所有圖片', width=12, height=1, font=(None,16), command=thread.allPicDelButton_Click)
     savePictureFile = Button(root, text='儲存圖檔',state = state, width=12, height=1, font=(None,16), command=thread.savePictureFileButton_Click)
     savePDF = Button(root, text='儲存PDF檔',state = tkinter.DISABLED, width=12, height=1, font=(None,16), command=thread.savePDF_Button_Click)
     testSavePDF = Button(root, text='測試PDF儲存', width=12, height=1, font=(None,16), command=thread.testPDF_Button_Click)
@@ -379,7 +380,8 @@ def ButtonGroup(root):
 
     openButton.place(relx=0.01, rely=0.01)
     rollStartButton.place(relx=0.10, rely=0.01)
-    allFingersButton.place(relx=0.19, rely=0.01)
+    # allFingersButton.place(relx=0.19, rely=0.01)
+    allPictureDeleteButton.place(relx=0.19, rely=0.01)
     stopButton.place(relx=0.28, rely=0.01)
     savePDF.place(relx=0.37, rely=0.01)
     testSavePDF.place(relx=0.46, rely=0.01)
@@ -487,6 +489,11 @@ class threadGroup:
         # 左右手指紋採集
         start_finger_collection()
 
+    def allPicDelButton_Click(self):
+        mean = means()
+        verify_thread = threading.Thread(target=mean.allPicDel)
+        verify_thread.start()
+
     def systemLogButton_Click(self):
         # print('系統日誌')
         # MessageText("系統日誌\r\n")
@@ -514,39 +521,15 @@ class threadGroup:
     def getUserInfo_Click(self):
 
 
-        print('使用者資訊Get')
-        MessageText(f"使用者資訊Get\r\n")
+        print('取得使用者資訊')
+        MessageText(f"取得使用者資訊\r\n")
         # 在這裡處理 user_info_text_content
         # 示範：顯示收集到的資料
 
         mean = means()
         verify_thread = threading.Thread(target=mean.userInfoInterface)
         verify_thread.start()
-
-        
-    def showInfoWindow(self, collected_data):
-        info_window = tkinter.Toplevel()
-        info_window.title("收集到的資料")
-
-        # 設定模式對話框，阻止對主介面的互動
-        info_window.grab_set()
-        
-        # 將資料顯示在新的視窗中
-        for row, (label, value) in enumerate(collected_data.items()):
-            label_widget = ttk.Label(info_window, text=f"{label}: {value}", font=("Helvetica", 24))
-            label_widget.grid(column=0, row=row, sticky="w", pady=5, padx=10)
-
-        info_message = f"收集到的資料: {collected_data}"
-        print(info_message)
-        MessageText(f"{info_message}\r\n")
-
-        # 在新視窗關閉時釋放模式對話框，使主介面恢復互動
-        info_window.protocol("WM_DELETE_WINDOW", lambda: self.releaseAndClose(info_window))
-
-    def releaseAndClose(self, window):
-        window.grab_release()
-        window.destroy()
-
+    
 
 #endregion
 
@@ -1053,18 +1036,20 @@ class means:
         info_window.title("收集到的資料")
         info_window.grab_set()
 
+        info_message = f"收集到的資料:\r\n"
         # 將資料顯示在新的視窗中
         for row, (label, value) in enumerate(collected_data.items()):
             label_widget = ttk.Label(info_window, text=f"{label}: {value}", font=("Helvetica", 24))
             label_widget.grid(column=0, row=row, sticky="w", pady=5, padx=10)
+            print(f"{label}: {value}")
+            info_message += f'{label}: {value}\r\n'
+        MessageText(info_message)
+
 
         # 加入一個關閉按鈕
         close_button = ttk.Button(info_window, text="關閉", command=lambda: releaseAndClose(info_window))
         close_button.grid(column=0, row=row + 1, columnspan=2, pady=10)
 
-        info_message = f"收集到的資料: {collected_data}"
-        print(info_message)
-        MessageText(f"{info_message}\r\n")
 
         info_window.protocol("WM_DELETE_WINDOW", lambda: releaseAndClose(info_window))
 
@@ -1072,6 +1057,10 @@ class means:
             window.grab_release()
             window.destroy()
 
+    def allPicDel(self):
+
+        print("刪除所有圖片\r\n")
+        MessageText("刪除所有圖片\r\n")
 
     def Stop(self):
         global isRunning, stop_all_threads
