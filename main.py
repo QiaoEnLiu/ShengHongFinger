@@ -29,6 +29,10 @@ try:
 
     import shutil, tempfile, traceback
 
+    from tkcalendar import DateEntry
+
+    import locale
+
 
     # font_path = os.path.join('word_font', 'Chinese', 'zh', 'msjh.ttc')
     font_path = resource_filename(__name__, 'word_font/msjh.ttc')
@@ -42,6 +46,9 @@ except Exception as e:
     traceback.print_exc()
     input("Press Enter to exit")
 
+
+locale.setlocale(locale.LC_TIME, 'zh_CN')
+
 left_fingers_text=['左手小指','左手無名指','左手中指','左手食指','左手大拇指']
 right_fingers_text=['右手大拇指','右手食指','右手中指','右手無名指','右手小指']
 
@@ -51,6 +58,7 @@ global right_hand, right_Thumb, right_Index, right_Middle, right_Ring, right_Pin
 left_hand_labels = []
 right_hand_labels = []
 
+userInfo_Text=None
 stop_all_threads = False
 
 
@@ -161,10 +169,11 @@ def UI():
     auxiliary.icoImage()
 
     ButtonGroup(root)
-    messageScrolledText(root)  # 调用信息框
     # FingerprintLibrary()
     showImage1(root)  # 调用滚动采集图片框
     # showImage2(root)  # 调用图片框
+    showUser(root)
+    messageScrolledText(root)  # 调用信息框
     clear_finger_cache()
     root.mainloop()  # 显示图形化界面
 #endregion
@@ -182,8 +191,8 @@ def update_image(label, image, photo):
 def showImage1(root):
     global fingers_label, left_hand, right_hand, lableShowImage1, lableShowImage2, bmpImage1, bmpImage2
     # auxiliary = auxiliaryMeans()
-    labFrame = LabelFrame(root, text="滚动采集指纹图像", relief=GROOVE, width=1875, height=950,font=(None,20))  # 设置图片样式
-    labFrame.place(relx=0.01, rely=0.1)
+    labFrame = LabelFrame(root, text="滚动采集指纹图像", relief=GROOVE, width=1250, height=950,font=(None,20))  # 设置图片样式
+    labFrame.place(relx=0.005, rely=0.05)
 
     fingers_label = Label(labFrame,text='手指',font=(None,16))
     fingers_label.place(relx=1, rely=0, anchor='e')
@@ -197,7 +206,7 @@ def showImage1(root):
     lableShowImage2 = Label(labFrame)  # 包含图片的标签
     lableShowImage2.config(text='每幀圖合成',compound=tkinter.BOTTOM,font=(None,20))
     lableShowImage2.place(relx=0, rely=0.525)
-    # lableShowImage2.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage2))
+    # lableShowImage2.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage2))    
 
 
     for i in range(5):
@@ -217,6 +226,65 @@ def showImage1(root):
     return lableShowImage1, lableShowImage2
 #endregion
 
+#region 使用者資料
+def showUser(root):
+    userInfoFrame = LabelFrame(root, text="使用者資料", relief=GROOVE,font=(None,20))
+    userInfoFrame.place(relx=0.675, rely=0.05)
+    create_user_info_widgets(userInfoFrame)
+#endregion
+
+#region 使用者資料
+def create_user_info_widgets(frame):
+    global userInfo_Text
+    thread=threadGroup()
+    labels = ["姓名", "性別", "出生", "住址", "電話"]
+    entry_vars = {}
+
+    for row, label in enumerate(labels):
+        label_widget = ttk.Label(frame, text=label + ":", font=("Helvetica", 24))
+        label_widget.grid(column=0, row=row, sticky="w", pady=10)
+        entry_var = StringVar()
+
+        entry_vars[label] = entry_var
+        if label == "性別":
+            # 單選按鈕
+            gender_var = StringVar()
+            gender_var.set("男")
+
+            # 設定單選按鈕的樣式
+            style = ttk.Style()
+            style.configure('TRadiobutton', font=('Helvetica', 18))
+
+            male_button = ttk.Radiobutton(frame, text="男", variable=gender_var, value="男", style='TRadiobutton')
+            male_button.grid(column=1, row=row, sticky="w", padx=0)
+            female_button = ttk.Radiobutton(frame, text="女", variable=gender_var, value="女", style='TRadiobutton')
+            female_button.grid(column=1, row=row, sticky="w", padx=75)
+            entry_vars[label] = gender_var
+        elif label == "出生":
+            # 使用 tkcalendar 中的 DateEntry
+            birth_date_entry = DateEntry(frame, width=12, background='darkblue', foreground='white', borderwidth=2,
+                                         date_pattern='yyyy-mm-dd', font=('Arial', 20))
+            birth_date_entry.grid(column=1, row=row, sticky="w", pady=5)
+            entry_vars[label] = birth_date_entry
+        elif label == "住址":
+            # 使用 Text 元件作為多行文字輸入框
+            address_text = Text(frame, height=5, width=30, font=('Helvetica', 20))
+            address_text.grid(column=1, row=row, sticky="w", pady=5)
+            entry_vars[label] = address_text
+        else:
+            entry_widget = ttk.Entry(frame, textvariable=entry_var, font=("Helvetica", 20))
+            entry_widget.grid(column=1, row=row, sticky="w", pady=5)
+
+    # 提交按钮
+    style = ttk.Style()
+    style.configure('TButton', font=('Helvetica', 20))  # 設定按鈕的字型
+    submit_button = ttk.Button(frame, text="提交", command=thread.getUserInfo_Click, style='TButton')
+    submit_button.grid(column=0, row=6, columnspan=3, pady=10)  # 跨越三列
+
+    userInfo_Text = entry_vars
+    # print('userInfo_Text:', userInfo_Text)
+
+#endregion
 
 #region 图片框
 def showImage2(root):
@@ -235,9 +303,9 @@ def showImage2(root):
 #region messageScrolledText
 def messageScrolledText(root):
     global text
-    text = tkinter.scrolledtext.ScrolledText(root, width=50, height=5)  # 设置信息框样式
+    text = tkinter.scrolledtext.ScrolledText(root, width=70, height=25)  # 设置信息框样式
     # text.configure(font=("Arial", 20))
-    text.place(relx=1, rely=0.01, anchor='ne')
+    text.place(relx=0.675, rely=0.55)
     text.see(END)  # 信息框处于滚动条最下面信息的位置
     return text
 #endregion
@@ -250,22 +318,23 @@ def ButtonGroup(root):
     # command为按钮的点击事件，不能加括号，如command=openButton_Click而不是command=openButton_Click()
     state = tkinter.DISABLED
     font=(None, 16)
-    openButton = Button(root, text='打开设备', width=12,height=2, font=font,command=mean.BeginOrClose)
-    featureButton = Button(root, text='注册',state = state, width=12, height=2, font=font, command=thread.featureButton_Click)
-    onCompareFingerButton = Button(root, text='1:1比对',state = state, width=12, height=2, font=font, command=thread.onCompareFingerButton_Click)
-    onCompareIdentifyButton = Button(root, text='1:N识别',state = state, width=12, height=2, font=font, command=thread.onCompareIdentifyButton_Click)
-    onCompareIdentifyNButton = Button(root, text='1:N查重', state=state, width=12, height=2, font=font,command=thread.onCompareIdentifyNButton_Click)
+    openButton = Button(root, text='打开设备', width=12,height=1, font=font,command=mean.BeginOrClose)
+    featureButton = Button(root, text='注册',state = state, width=12, height=1, font=font, command=thread.featureButton_Click)
+    onCompareFingerButton = Button(root, text='1:1比对',state = state, width=12, height=1, font=font, command=thread.onCompareFingerButton_Click)
+    onCompareIdentifyButton = Button(root, text='1:N识别',state = state, width=12, height=1, font=font, command=thread.onCompareIdentifyButton_Click)
+    onCompareIdentifyNButton = Button(root, text='1:N查重', state=state, width=12, height=1, font=font,command=thread.onCompareIdentifyNButton_Click)
 
-    rollStartButton = Button(root, text='滚动采集',state = state, width=12, height=2, font=(None,16), command=thread.rollStartButton_Click)
-    stopButton = Button(root, text='停止',state = state, width=12, height=2, font=font, command=mean.Stop)
-    SingleDeleteButton = Button(root, text='单一删除',state = state, width=12, height=2, font=font, command=mean.SingleDelete)
-    AllDeleteButton = Button(root, text='清空指纹库', state=state, width=12, height=2, font=font,command=mean.AllDelete)
-    exitButton = Button(root, text='退出', width=12, height=2, font=font, command=mean.Exit)
+    rollStartButton = Button(root, text='滚动采集',state = state, width=12, height=1, font=(None,16), command=thread.rollStartButton_Click)
+    stopButton = Button(root, text='停止',state = state, width=12, height=1, font=font, command=mean.Stop)
+    SingleDeleteButton = Button(root, text='单一删除',state = state, width=12, height=1, font=font, command=mean.SingleDelete)
+    AllDeleteButton = Button(root, text='清空指纹库', state=state, width=12, height=1, font=font,command=mean.AllDelete)
+    exitButton = Button(root, text='退出', width=12, height=1, font=font, command=mean.Exit)
 
-    systemLogButton = Button(root, text='系統日誌', width=12, height=2, font=(None,16), command=thread.systemLogButton_Click)
-    allFingersButton = Button(root, text='採集所有手指',state = state, width=12, height=2, font=(None,16), command=thread.allFingersButton_Click)
-    savePictureFile = Button(root, text='儲存圖檔',state = state, width=12, height=2, font=(None,16), command=thread.savePictureFileButton_Click)
-    savePDF = Button(root, text='儲存PDF檔',state = tkinter.DISABLED, width=12, height=2, font=(None,16), command=thread.savePDF_Button_Click)
+    # systemLogButton = Button(root, text='系統日誌', width=12, height=1, font=(None,16), command=thread.systemLogButton_Click)
+    allFingersButton = Button(root, text='採集所有手指',state = state, width=12, height=1, font=(None,16), command=thread.allFingersButton_Click)
+    savePictureFile = Button(root, text='儲存圖檔',state = state, width=12, height=1, font=(None,16), command=thread.savePictureFileButton_Click)
+    savePDF = Button(root, text='儲存PDF檔',state = tkinter.DISABLED, width=12, height=1, font=(None,16), command=thread.savePDF_Button_Click)
+    testSavePDF = Button(root, text='測試PDF儲存', width=12, height=1, font=(None,16))
 
     # 按钮的位置，范围0-1
     # openButton.place(relx=0.02, rely=0.01)
@@ -290,7 +359,8 @@ def ButtonGroup(root):
     allFingersButton.place(relx=0.19, rely=0.01)
     stopButton.place(relx=0.28, rely=0.01)
     savePDF.place(relx=0.37, rely=0.01)
-    systemLogButton.place(relx=0.46, rely=0.01)
+    testSavePDF.place(relx=0.46, rely=0.01)
+    # systemLogButton.place(relx=0.55, rely=0.01)
     exitButton.place(relx=0.55, rely=0.01)
 
     return [rollStartButton,featureButton,onCompareFingerButton,onCompareIdentifyButton,onCompareIdentifyNButton,stopButton,SingleDeleteButton,AllDeleteButton, allFingersButton,savePDF]
@@ -409,6 +479,32 @@ class threadGroup:
         print('儲存PDF')
         MessageText("儲存PDF\r\n")
         SavePDFFile.create_pdf(self)
+
+    def getUserInfo_Click(self):
+        print('使用者資訊Get')
+
+        # 提示訊息
+        MessageText("使用者資訊Get\r\n")
+
+        # 收集資料
+        collected_data = {}
+        for label, var_or_widget in userInfo_Text.items():
+            if isinstance(var_or_widget, tkinter.StringVar):
+                # 對於 StringVar，使用 get() 取得值
+                collected_data[label] = var_or_widget.get()
+            elif isinstance(var_or_widget, tkinter.Text):
+                # 對於 Text 元件，使用 .get("1.0", "end-1c") 取得值
+                collected_data[label] = var_or_widget.get("1.0", "end-1c")
+            elif isinstance(var_or_widget, DateEntry):
+                # 對於 DateEntry 元件，使用 get_date() 取得日期值
+                collected_data[label] = var_or_widget.get_date()
+
+        # 示範：顯示收集到的資料
+        info_message = "收集到的資料:\n"
+        for label, value in collected_data.items():
+            info_message += f"{label}: {value}\n"
+        print(info_message)
+        MessageText(f"{info_message}\r\n")
 
 #endregion
 
