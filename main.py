@@ -58,6 +58,9 @@ global right_hand, right_Thumb, right_Index, right_Middle, right_Ring, right_Pin
 left_hand_labels = []
 right_hand_labels = []
 
+left_hand_buttons = []
+right_hand_buttons = []
+
 userInfo_Text=None
 stop_all_threads = False
 
@@ -210,14 +213,24 @@ def showImage1(root):
 
 
     for i in range(5):
-        left_label = Label(labFrame,font=(None,20))
-        right_label = Label(labFrame,font=(None,20))
+        left_label = Label(labFrame,font=(None,20), text=left_fingers_text[i])
+        right_label = Label(labFrame,font=(None,20), text=right_fingers_text[i])
 
         left_label.place(relx=0.15 + i*0.15, rely=0.025)
         right_label.place(relx=0.15 + i*0.15, rely=0.525)
 
         left_hand_labels.append(left_label)
         right_hand_labels.append(right_label)
+
+    for i in range(5):
+        left_button = Button(labFrame,font=(None,20), text=left_fingers_text[i])
+        right_button = Button(labFrame,font=(None,20), text=right_fingers_text[i])
+
+        left_button.place(relx=0.15 + i*0.15, rely=0.025)
+        right_button.place(relx=0.15 + i*0.15, rely=0.525)
+
+        left_hand_buttons.append(left_button)
+        right_hand_buttons.append(right_button)
 
         
     left_hand = left_hand_labels
@@ -226,27 +239,35 @@ def showImage1(root):
     return lableShowImage1, lableShowImage2
 #endregion
 
+#entry_Default={"姓名":'勝宏精密科技',"性別":'男',"出生":'20111222',"住址":'412台中市大里區福大路41號',"電話":'0424865877'}
+
 #region 使用者資料
 def showUser(root):
-    userInfoFrame = LabelFrame(root, text="使用者資料", relief=GROOVE,font=(None,20))
-    userInfoFrame.place(relx=0.675, rely=0.05)
-    create_user_info_widgets(userInfoFrame)
-#endregion
-
-#region 使用者資料
-def create_user_info_widgets(frame):
     global userInfo_Text
-    thread=threadGroup()
-    labels = ["姓名", "性別", "出生", "住址", "電話"]
+    userInfoFrame = LabelFrame(root, text="使用者資料", padx=75, relief=GROOVE, font=(None, 20)) # 使用者資料
+    userInfoFrame.place(relx=0.675, rely=0.05)
+
+    thread = threadGroup()
+    # entry_Default = {"姓名": 'Joe', "性別": '男', "出生": '20111222', "住址": 'Taichung City, West Section, Taichung Road, 123',
+    #                 "電話": '04123456789'}
+    entry_Default={"姓名":'勝宏精密科技',"性別":'男',"出生":'20111222',"住址":'412台中市大里區福大路41號',"電話":'0424865877'}
     entry_vars = {}
 
-    for row, label in enumerate(labels):
-        label_widget = ttk.Label(frame, text=label + ":", font=("Helvetica", 24))
-        label_widget.grid(column=0, row=row, sticky="w", pady=10)
-        entry_var = StringVar()
+    internal_frame = ttk.Frame(userInfoFrame)
+    internal_frame.grid(row=0, column=0)
 
-        entry_vars[label] = entry_var
-        if label == "性別":
+    for row, label in enumerate(["姓名", "性別", "出生", "住址", "電話"]):
+        label_widget = ttk.Label(internal_frame, text=label + ":", font=("Helvetica", 24))
+        label_widget.grid(column=0, row=row, sticky="w", pady=10)
+
+        entry_var = StringVar()
+        entry_var.set(entry_Default.get(label, ""))  # 設定初始值，若無則為空字串
+
+        if label == "姓名":
+            name_entry = ttk.Entry(internal_frame, font=("Helvetica", 20), textvariable=entry_var)
+            name_entry.grid(column=1, row=row, sticky="w", pady=5)
+            entry_vars[label] = entry_var
+        elif label == "性別":
             # 單選按鈕
             gender_var = StringVar()
             gender_var.set("男")
@@ -255,36 +276,38 @@ def create_user_info_widgets(frame):
             style = ttk.Style()
             style.configure('TRadiobutton', font=('Helvetica', 18))
 
-            male_button = ttk.Radiobutton(frame, text="男", variable=gender_var, value="男", style='TRadiobutton')
+            male_button = ttk.Radiobutton(internal_frame, text="男", variable=gender_var, value="男", style='TRadiobutton')
             male_button.grid(column=1, row=row, sticky="w", padx=0)
-            female_button = ttk.Radiobutton(frame, text="女", variable=gender_var, value="女", style='TRadiobutton')
+            female_button = ttk.Radiobutton(internal_frame, text="女", variable=gender_var, value="女", style='TRadiobutton')
             female_button.grid(column=1, row=row, sticky="w", padx=75)
             entry_vars[label] = gender_var
         elif label == "出生":
             # 使用 tkcalendar 中的 DateEntry
-            birth_date_entry = DateEntry(frame, width=12, background='darkblue', foreground='white', borderwidth=2,
-                                         date_pattern='yyyy-mm-dd', font=('Arial', 20))
+            birth_date_entry = DateEntry(internal_frame, width=12, background='darkblue', foreground='white',
+                                         borderwidth=2, date_pattern='yyyy-mm-dd', font=('Arial', 20))
             birth_date_entry.grid(column=1, row=row, sticky="w", pady=5)
             entry_vars[label] = birth_date_entry
         elif label == "住址":
-            # 使用 Text 元件作為多行文字輸入框
-            address_text = Text(frame, height=5, width=30, font=('Helvetica', 20))
+            # 使用 Entry 元件作為多行文字輸入框
+            address_text = ttk.Entry(internal_frame, font=('Helvetica', 20), textvariable=entry_var)
             address_text.grid(column=1, row=row, sticky="w", pady=5)
-            entry_vars[label] = address_text
-        else:
-            entry_widget = ttk.Entry(frame, textvariable=entry_var, font=("Helvetica", 20))
-            entry_widget.grid(column=1, row=row, sticky="w", pady=5)
+            entry_vars[label] = entry_var
+        elif label == "電話":
+            phone_entry = ttk.Entry(internal_frame, font=("Helvetica", 20), textvariable=entry_var)
+            phone_entry.grid(column=1, row=row, sticky="w", pady=5)
+            entry_vars[label] = entry_var
 
     # 提交按钮
     style = ttk.Style()
     style.configure('TButton', font=('Helvetica', 20))  # 設定按鈕的字型
-    submit_button = ttk.Button(frame, text="提交", command=thread.getUserInfo_Click, style='TButton')
+    submit_button = ttk.Button(userInfoFrame, text="使用者資料預覽", command=thread.getUserInfo_Click, style='TButton')
     submit_button.grid(column=0, row=6, columnspan=3, pady=10)  # 跨越三列
 
     userInfo_Text = entry_vars
     # print('userInfo_Text:', userInfo_Text)
-
+    
 #endregion
+
 
 #region 图片框
 def showImage2(root):
@@ -334,7 +357,7 @@ def ButtonGroup(root):
     allFingersButton = Button(root, text='採集所有手指',state = state, width=12, height=1, font=(None,16), command=thread.allFingersButton_Click)
     savePictureFile = Button(root, text='儲存圖檔',state = state, width=12, height=1, font=(None,16), command=thread.savePictureFileButton_Click)
     savePDF = Button(root, text='儲存PDF檔',state = tkinter.DISABLED, width=12, height=1, font=(None,16), command=thread.savePDF_Button_Click)
-    testSavePDF = Button(root, text='測試PDF儲存', width=12, height=1, font=(None,16))
+    testSavePDF = Button(root, text='測試PDF儲存', width=12, height=1, font=(None,16), command=thread.testPDF_Button_Click)
 
     # 按钮的位置，范围0-1
     # openButton.place(relx=0.02, rely=0.01)
@@ -480,31 +503,50 @@ class threadGroup:
         MessageText("儲存PDF\r\n")
         SavePDFFile.create_pdf(self)
 
+
+    def testPDF_Button_Click(self):
+        print('測試PDF')
+        MessageText("測試PDF\r\n")
+        SavePDFFile.test_creat_PDF(self)
+
+
+
     def getUserInfo_Click(self):
+
+
         print('使用者資訊Get')
-
-        # 提示訊息
-        MessageText("使用者資訊Get\r\n")
-
-        # 收集資料
-        collected_data = {}
-        for label, var_or_widget in userInfo_Text.items():
-            if isinstance(var_or_widget, tkinter.StringVar):
-                # 對於 StringVar，使用 get() 取得值
-                collected_data[label] = var_or_widget.get()
-            elif isinstance(var_or_widget, tkinter.Text):
-                # 對於 Text 元件，使用 .get("1.0", "end-1c") 取得值
-                collected_data[label] = var_or_widget.get("1.0", "end-1c")
-            elif isinstance(var_or_widget, DateEntry):
-                # 對於 DateEntry 元件，使用 get_date() 取得日期值
-                collected_data[label] = var_or_widget.get_date()
-
+        MessageText(f"使用者資訊Get\r\n")
+        # 在這裡處理 user_info_text_content
         # 示範：顯示收集到的資料
-        info_message = "收集到的資料:\n"
-        for label, value in collected_data.items():
-            info_message += f"{label}: {value}\n"
+
+        mean = means()
+        verify_thread = threading.Thread(target=mean.userInfoInterface)
+        verify_thread.start()
+
+        
+    def showInfoWindow(self, collected_data):
+        info_window = tkinter.Toplevel()
+        info_window.title("收集到的資料")
+
+        # 設定模式對話框，阻止對主介面的互動
+        info_window.grab_set()
+        
+        # 將資料顯示在新的視窗中
+        for row, (label, value) in enumerate(collected_data.items()):
+            label_widget = ttk.Label(info_window, text=f"{label}: {value}", font=("Helvetica", 24))
+            label_widget.grid(column=0, row=row, sticky="w", pady=5, padx=10)
+
+        info_message = f"收集到的資料: {collected_data}"
         print(info_message)
         MessageText(f"{info_message}\r\n")
+
+        # 在新視窗關閉時釋放模式對話框，使主介面恢復互動
+        info_window.protocol("WM_DELETE_WINDOW", lambda: self.releaseAndClose(info_window))
+
+    def releaseAndClose(self, window):
+        window.grab_release()
+        window.destroy()
+
 
 #endregion
 
@@ -1002,6 +1044,35 @@ class means:
         # 啟動主迴圈
         logRoot.mainloop()
 
+
+    def userInfoInterface(self):
+        collected_data = {label: var.get() for label, var in userInfo_Text.items()}
+        # 設定模式對話框，阻止對主介面的互動
+        
+        info_window = tkinter.Toplevel()
+        info_window.title("收集到的資料")
+        info_window.grab_set()
+
+        # 將資料顯示在新的視窗中
+        for row, (label, value) in enumerate(collected_data.items()):
+            label_widget = ttk.Label(info_window, text=f"{label}: {value}", font=("Helvetica", 24))
+            label_widget.grid(column=0, row=row, sticky="w", pady=5, padx=10)
+
+        # 加入一個關閉按鈕
+        close_button = ttk.Button(info_window, text="關閉", command=lambda: releaseAndClose(info_window))
+        close_button.grid(column=0, row=row + 1, columnspan=2, pady=10)
+
+        info_message = f"收集到的資料: {collected_data}"
+        print(info_message)
+        MessageText(f"{info_message}\r\n")
+
+        info_window.protocol("WM_DELETE_WINDOW", lambda: releaseAndClose(info_window))
+
+        def releaseAndClose(window):
+            window.grab_release()
+            window.destroy()
+
+
     def Stop(self):
         global isRunning, stop_all_threads
         stop_all_threads = True
@@ -1480,6 +1551,44 @@ class SavePDFFile:
         """
         image = Image.open(filename)
         return image
+    
+
+
+    def test_creat_PDF(self):
+        print('測試PDF儲存')
+        MessageText("測試PDF儲存\r\n")
+        name = userInfo_Text["姓名"].get()
+        pdf_file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")],
+                                                  initialfile=name)
+
+        # 如果使用者取消選擇，則不執行以下程式
+        if pdf_file_path:
+            # 創建一個PDF文件
+            pdf_canvas = canvas.Canvas(pdf_file_path)
+
+            # 設置字型
+            pdf_canvas.setFont('ChineseFont', 20)
+
+            # 寫入資料到PDF
+            y_position = 750  # 起始位置
+            for label, value in userInfo_Text.items():
+                text = f"{label}: {value.get()}"
+                pdf_canvas.drawString(100, y_position, text)
+                y_position -= 30  # 每行之間的垂直間距
+
+                print(f"{label}: {value.get()}")
+
+            # 保存PDF文件
+            pdf_canvas.save()
+
+        elif not pdf_file_path:
+            print("測試PDF取消儲存")
+            MessageText("測試PDF取消儲存\r\n")
+            return
+
+        print('測試PDF儲存成功')
+        MessageText("測試PDF儲存成功\r\n")
+
 
 #endregion
 
