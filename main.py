@@ -222,8 +222,10 @@ def showImage1(root):
 
 
     for i in range(5):
-        left_label = Label(labFrame,font=(None,18))
-        right_label = Label(labFrame,font=(None,18))
+        left_label = Label(labFrame,font=(None,18),text=left_fingers_text[i])
+        left_label.bind("<Button-1>", lambda event, text=left_label.cget('text'): thread.picDel_Click(text))
+        right_label = Label(labFrame,font=(None,18),text=right_fingers_text[i])
+        right_label.bind("<Button-1>", lambda event, text=right_label.cget('text'): thread.picDel_Click(text))
 
         left_label.place(relx=0.155 + i*0.165, rely=0.025)
         right_label.place(relx=0.155 + i*0.165, rely=0.525)
@@ -558,6 +560,11 @@ class threadGroup:
         verify_thread = threading.Thread(target=mean.fingerPrint, args=(finger_label,finger_Text,))
         verify_thread.start()
 
+
+    def picDel_Click(self, label_text):
+        mean = means()
+        verify_thread = threading.Thread(target=mean.picDel(label_text))
+        verify_thread.start()
     
 
 #endregion
@@ -1193,14 +1200,35 @@ class means:
             print("未獲取有效的暫存圖檔來進行輸出")
             MessageText(f"未獲取有效的暫存圖檔來進行輸出\r\n")
 
+
+    #region allPicDel
     def allPicDel(self):
 
         print("刪除所有暫存圖片\r\n")
         MessageText("刪除所有暫存圖片\r\n")
-        empty_photo = tkinter.PhotoImage()
-        temp_folder_path = "fingerCache"
+        
+        confirmation_window = tkinter.Toplevel()
+        confirmation_window.title(f"確認刪除所有指紋")
+        confirmation_window.grab_set()
 
+        # 在新窗口中顯示提示信息
+        message_label = Label(confirmation_window, text=f"確定要刪除所有指紋的圖片嗎？", font=(None, 24))
+        message_label.pack(padx=10, pady=10)
+
+        # 確定按鈕
+        confirm_button = Button(confirmation_window, text="確定", font=(None, 24), command=lambda: means.confirm_all_delete(window=confirmation_window))
+        confirm_button.pack(side=tkinter.LEFT, padx=5)
+
+        # 取消按鈕
+        cancel_button = Button(confirmation_window, text="取消", font=(None, 24), command=lambda: means.cancel_all_delete(window=confirmation_window))
+        cancel_button.pack(side=tkinter.RIGHT, padx=5)
+
+        # 確定按鈕的點擊動作
+    def confirm_all_delete(window):
+        temp_folder_path = "fingerCache"
+        print('開始刪除')
         # 清空暫存資料夾
+        empty_photo = tkinter.PhotoImage()
         for filename in os.listdir(temp_folder_path):
             file_path = os.path.join(temp_folder_path, filename)
             try:
@@ -1213,8 +1241,76 @@ class means:
 
         for i in left_hand+right_hand:
             i.configure(image=empty_photo)
+            i.image=None
             print('刪除:',i.cget('text'),i.cget('image')=='')
 
+        MessageText(f"刪除全部指紋\r\n")
+
+        window.destroy()
+
+    # 取消按鈕的點擊動作
+    def cancel_all_delete(window):
+        for i in left_hand+right_hand:
+            if i.cget('image')!=None:
+                print('保留：',i.cget('text'))
+
+        MessageText(f"取消刪除所有指紋\r\n")
+        window.destroy()
+    #endregion
+        
+    #region picDel
+    def picDel(self,label_text):
+        print(f'刪除{label_text}指紋')
+
+        for i in left_hand+right_hand:
+            if i.cget('text')==label_text and i.cget('image')!=None:
+                confirmation_window = tkinter.Toplevel()
+                confirmation_window.title(f"確認刪除{label_text}")
+                confirmation_window.grab_set()
+
+                # 在新窗口中顯示提示信息
+                message_label = Label(confirmation_window, text=f"確定要刪除 {label_text} 的圖片嗎？", font=(None, 24))
+                message_label.pack(padx=10, pady=10)
+
+                # 確定按鈕
+                confirm_button = Button(confirmation_window, text="確定", font=(None, 24), command=lambda i=i: means.confirm_pic_delete(i,confirmation_window))
+                confirm_button.pack(side=tkinter.LEFT, padx=5)
+
+                # 取消按鈕
+                cancel_button = Button(confirmation_window, text="取消", font=(None, 24), command=lambda i=i: means.cancel_pic_delete(i,confirmation_window))
+                cancel_button.pack(side=tkinter.RIGHT, padx=5)
+
+    # 確定按鈕的點擊動作
+    def confirm_pic_delete(label,window):
+        empty_photo = tkinter.PhotoImage()
+        label.configure(image=empty_photo)
+        label.image = None
+        temp_folder_path = "fingerCache"
+        # print(label.cget('text'),label.cget('image')!=None)
+        for filename in os.listdir(temp_folder_path):
+            file_path = os.path.join(temp_folder_path, filename)
+            try:
+                if label.cget('text') in filename:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                    print(label.cget('text'),label.cget('image')!=None)
+                    MessageText(f"{label.cget('text')}已被刪除\r\n")
+            except Exception as e:
+                print(f"無法刪除 {file_path}: {e}")
+                MessageText(f"無法刪除 {file_path}: {e}\r\n")
+
+        # label.image = None
+        window.destroy()
+
+    # 取消按鈕的點擊動作
+    def cancel_pic_delete(label,window):
+        print(label.cget('text'),label.cget('image')!=None)
+        MessageText(f"{label.cget('text')}取消刪除\r\n")
+        window.destroy()
+
+    #endregion
 
 
     def Stop(self):
