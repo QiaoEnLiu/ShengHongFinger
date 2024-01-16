@@ -55,6 +55,7 @@ right_fingers_text=['右手大拇指','右手食指','右手中指','右手無�
 global left_hand, left_Pinky, left_Ring, left_Middle, left_Index, left_Thumb
 global right_hand, right_Thumb, right_Index, right_Middle, right_Ring, right_Pinky
 
+
 left_hand_labels = []
 right_hand_labels = []
 
@@ -194,45 +195,58 @@ def update_image(label, image, photo):
 def showImage1(root):
     global fingers_label, left_hand, right_hand, lableShowImage1, lableShowImage2, bmpImage1, bmpImage2
     # auxiliary = auxiliaryMeans()
+
+    mean=means()
+    thread=threadGroup()
+
+    state = tkinter.DISABLED
+
+
     labFrame = LabelFrame(root, text="滚动采集指纹图像", relief=GROOVE, width=1250, height=950,font=(None,20))  # 设置图片样式
     labFrame.place(relx=0.005, rely=0.05)
 
-    fingers_label = Label(labFrame,text='手指',font=(None,16))
-    fingers_label.place(relx=1, rely=0, anchor='e')
+    # fingers_label = Label(labFrame,text='手指',font=(None,16)) 
+    # fingers_label.place(relx=1, rely=0, anchor='e')
 
     
     lableShowImage1 = Label(labFrame)  # 包含图片的标签
-    lableShowImage1.config(text='每幀圖測試',compound=tkinter.BOTTOM,font=(None,20))
+    lableShowImage1.config(text='每幀圖測試',compound=tkinter.BOTTOM,font=(None,18))
     lableShowImage1.place(relx=0, rely=0.025)
     # lableShowImage1.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage1))
 
     lableShowImage2 = Label(labFrame)  # 包含图片的标签
-    lableShowImage2.config(text='每幀圖合成',compound=tkinter.BOTTOM,font=(None,20))
+    lableShowImage2.config(text='每幀圖合成',compound=tkinter.BOTTOM,font=(None,18))
     lableShowImage2.place(relx=0, rely=0.525)
-    # lableShowImage2.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage2))    
+    # lableShowImage2.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage2))
+
 
 
     for i in range(5):
-        left_label = Label(labFrame,font=(None,20), text=left_fingers_text[i])
-        right_label = Label(labFrame,font=(None,20), text=right_fingers_text[i])
+        left_label = Label(labFrame,font=(None,18))
+        right_label = Label(labFrame,font=(None,18))
 
-        left_label.place(relx=0.15 + i*0.15, rely=0.025)
-        right_label.place(relx=0.15 + i*0.15, rely=0.525)
+        left_label.place(relx=0.155 + i*0.165, rely=0.025)
+        right_label.place(relx=0.155 + i*0.165, rely=0.525)
 
         left_hand_labels.append(left_label)
         right_hand_labels.append(right_label)
 
-    for i in range(5):
-        left_button = Button(labFrame,font=(None,20), text=left_fingers_text[i])
-        right_button = Button(labFrame,font=(None,20), text=right_fingers_text[i])
 
-        left_button.place(relx=0.15 + i*0.15, rely=0.025)
-        right_button.place(relx=0.15 + i*0.15, rely=0.525)
+    for i in range(5):
+        left_button = Button(labFrame, font=(None,18),width=12, text='採集'+left_fingers_text[i],state=state,
+                              command=lambda i=i: thread.fingerPrint_Click(left_hand_labels[i],left_fingers_text[i]))
+        
+        right_button = Button(labFrame, font=(None,18),width=12, text='採集'+right_fingers_text[i],state=state,
+                               command=lambda i=i: thread.fingerPrint_Click(right_hand_labels[i],right_fingers_text[i]))
+
+        left_button.place(relx=0.155 + i*0.165, rely=0.010)
+        right_button.place(relx=0.155 + i*0.165, rely=0.510)
 
         left_hand_buttons.append(left_button)
         right_hand_buttons.append(right_button)
 
-        
+
+    
     left_hand = left_hand_labels
     right_hand = right_hand_labels
 
@@ -529,6 +543,21 @@ class threadGroup:
         mean = means()
         verify_thread = threading.Thread(target=mean.userInfoInterface)
         verify_thread.start()
+
+
+    def fingerPrint_Click(self,finger_label,finger_Text):
+        MessageText(f'開姞掃描{finger_Text}\r\n')
+
+        for i in left_hand_buttons+right_hand_buttons:
+            i.config(state=tkinter.DISABLED)
+            # print(i.cget('text')[2:],'狀態：', i.cget('state'))
+            if i.cget('text')[2:]==finger_label.cget('text'):
+                print('採集中：',finger_label.cget('text'))
+        
+        mean = means()
+        verify_thread = threading.Thread(target=mean.fingerPrint, args=(finger_label,finger_Text,))
+        verify_thread.start()
+
     
 
 #endregion
@@ -552,7 +581,7 @@ class means:
             return None
 
     def BeginOrClose(self):
-        global message, isOpen, openButton, isRunning
+        global message, isOpen, openButton, isRunning,left_hand_buttons,right_hand_buttons
         mean = means()
         auxiliary=auxiliaryMeans()
 
@@ -592,6 +621,11 @@ class means:
                             info = info+"打开设备成功\r\n序列号:" + SN[2]
                             isOpen = True
                             openButton.config(text="关闭设备")
+
+                            for i in left_hand_buttons+right_hand_buttons:
+                                i.config(state=tkinter.NORMAL)
+                                print('開啟',i.cget('text')[2:],',狀態：', i.cget('state'))
+
                             MessageText(info+"\r\n")
                         else:
                             WMRAPI.CloseDevice()
@@ -608,6 +642,10 @@ class means:
                 isRunning=False
                 auxiliary.anConfig(root, tkinter.DISABLED)  # 启用按钮
                 openButton.config(text="打开设备")
+                for i in left_hand_buttons+right_hand_buttons:
+                    i.config(state=tkinter.DISABLED)
+                    print('關閉',i.cget('text')[2:],',狀態：', i.cget('state'))
+
                 MessageText("关闭设备成功\r\n")
             else:
                 MessageText("设备关闭失败\r\n")
@@ -619,7 +657,7 @@ class means:
         baseImage = None
         WMRAPI.SetOptions()
         startTime = datetime.datetime.now()
-        imgResizeRate=0.82
+        imgResizeRate=0.5
         flag = False
         if isOpen == True:
             isRunning = True
@@ -683,7 +721,7 @@ class means:
                     ShowImage2 = img2
                     bmpImage2 = p
 
-    # 掃描所有手指
+    # （此功能取消）掃描所有手指
     def RollStartAllFingers(self, finger, text):
         global isOpen, isRunning, message, ShowImage1, ShowImage2, bmpImage1, bmpImage2
         WMRAPI = WMRAPI_Dll()
@@ -691,7 +729,7 @@ class means:
         baseImage = None
         WMRAPI.SetOptions()
         startTime = datetime.datetime.now()
-        imgResizeRate=0.82
+        imgResizeRate=0.5
         if isOpen == True:
             isRunning = True
             flag = True
@@ -1057,10 +1095,127 @@ class means:
             window.grab_release()
             window.destroy()
 
+    def fingerPrint(self,finger_label,finger_Text):
+        
+
+        print(f"請按下{finger_Text}")
+        MessageText(f"請按下{finger_Text}\r\n")
+        global isOpen, isRunning, message, ShowImage1, ShowImage2, bmpImage1, bmpImage2
+        WMRAPI = WMRAPI_Dll()
+        auxiliary=auxiliaryMeans()
+        baseImage = None
+        WMRAPI.SetOptions()
+        startTime = datetime.datetime.now()
+        imgResizeRate=0.55
+        if isOpen == True:
+            isRunning = True
+            flag = True
+            MessageText("按下手指，开始滚动采集指纹\r\n")
+        while (flag):
+            flag = isRunning  # 线程开启状态
+            if flag == False:
+                return
+            RAW = WMRAPI.GetFrame()
+            if RAW[0] == 1:  # 从手指第一次按下时开始计算
+                BMP = WMRAPI.RawToBMP(RAW[1], rollImageWidth, rollImageHeight)
+                byte_stream = BytesIO(BMP[1].raw)  # 将二进制转为字节流
+                roiImg = Image.open(byte_stream)
+                resizeImg1 = roiImg.resize((int(rollImageWidth * imgResizeRate), int(rollImageHeight * imgResizeRate)))
+                img = ImageTk.PhotoImage(resizeImg1)
+                lableShowImage1.config(image=img)  # 显示最新一张实时图片
+                bmpImage1 = roiImg
+                # 底图
+                baseImage = auxiliary.RemoveBackground(roiImg)
+                p = Image.new('RGBA', baseImage.size, (0, 0, 0))
+                baseImage = baseImage.filter(ImageFilter.DETAIL)  # 细节增强
+                p.paste(baseImage, mask=baseImage)
+                resizeImg=p.resize((int(rollImageWidth*imgResizeRate),int(rollImageHeight*imgResizeRate)))
+                img2 = ImageTk.PhotoImage(resizeImg)
+                self.finger_images.append(img2)
+                lableShowImage2.config(image=img2)  # 显示最新一张显示图片
+                # finger.config(text=text,image=img2,compound=tkinter.BOTTOM)    
+                ShowImage1 = img
+                ShowImage2 = img2
+                bmpImage2 = p
+                break
+        while (flag):
+            flag = isRunning  # 线程开启状态
+            if flag == False:
+                return
+            RAW = WMRAPI.GetFrame()
+            if RAW[0] == 0:
+                MessageText("手指抬起，指纹滚动采集结束\r\n")
+                for i in left_hand_buttons+right_hand_buttons:
+                    i.config(state=tkinter.NORMAL)
+                    if i.cget('text')[2:]==finger_label.cget('text'):
+                        print('採集結束：',finger_label.cget('text'))
+                        MessageText('採集結束：'+finger_label.cget('text'))
+
+                break
+            print(RAW)
+            if RAW[0] == 1:
+                BMP = WMRAPI.RawToBMP(RAW[1],rollImageWidth,rollImageHeight)
+                byte_stream = BytesIO(BMP[1].raw)  # 将二进制转为字节流
+                roiImg = Image.open(byte_stream)
+                roiImg1 = auxiliary.RemoveBackground(roiImg)
+                resizeImg1 = roiImg.resize((int(rollImageWidth * imgResizeRate), int(rollImageHeight * imgResizeRate)))
+                img = ImageTk.PhotoImage(resizeImg1)
+                lableShowImage1.config(image=img)  # 显示最新一张实时图片
+                lableShowImage1.update()
+                ShowImage1 = img
+                bmpImage1 = roiImg
+                if (datetime.datetime.now() >= startTime + datetime.timedelta(seconds=0.5)):
+                    startTime = datetime.datetime.now()
+                    baseImage.paste(roiImg1, mask=roiImg1)
+                    p = Image.new('RGBA', baseImage.size, (0, 0, 0))
+                    baseImage2 = baseImage.filter(ImageFilter.DETAIL)  # 细节增强
+                    p.paste(baseImage2, mask=baseImage2)
+                    resizeImg2 = p.resize((int(rollImageWidth * imgResizeRate), int(rollImageHeight * imgResizeRate)))
+                    img2 = ImageTk.PhotoImage(resizeImg2)
+                    self.finger_images.append(img2)
+                    lableShowImage2.config(image=img2)  # 显示最新一张显示图片
+                    lableShowImage2.update()
+                    # finger_label.config(text=text,image=img2,compound=tkinter.BOTTOM)  # 显示最新一张显示图片
+                    # finger_label.update()
+                    ShowImage2 = img2
+                    bmpImage2 = p
+
+        finger_label.config(text=finger_Text, image=self.finger_images[-1], compound=tkinter.BOTTOM)
+        image_format = roiImg.format
+        print(f"暫存圖片格式: {finger_Text}.{image_format}")
+        MessageText(f"暫存圖片格式: {finger_Text}.{image_format}\r\n")
+        if bmpImage2 is not None:
+            output_path = f'fingerCache/{finger_Text}.bmp'  # 替換成你想保存的路徑
+            bmpImage2.save(output_path)
+            print(f"暫存圖檔已成功輸出至: {output_path}")
+            MessageText(f"暫存圖檔已成功輸出至: {output_path}\r\n")
+        else:
+            print("未獲取有效的暫存圖檔來進行輸出")
+            MessageText(f"未獲取有效的暫存圖檔來進行輸出\r\n")
+
     def allPicDel(self):
 
-        print("刪除所有圖片\r\n")
-        MessageText("刪除所有圖片\r\n")
+        print("刪除所有暫存圖片\r\n")
+        MessageText("刪除所有暫存圖片\r\n")
+        empty_photo = tkinter.PhotoImage()
+        temp_folder_path = "fingerCache"
+
+        # 清空暫存資料夾
+        for filename in os.listdir(temp_folder_path):
+            file_path = os.path.join(temp_folder_path, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f"無法刪除 {file_path}: {e}")
+
+        for i in left_hand+right_hand:
+            i.configure(image=empty_photo)
+            print('刪除:',i.cget('text'),i.cget('image')=='')
+
+
 
     def Stop(self):
         global isRunning, stop_all_threads
