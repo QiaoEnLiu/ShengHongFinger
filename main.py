@@ -33,14 +33,6 @@ try:
 
     import locale
 
-
-    # font_path = os.path.join('word_font', 'Chinese', 'zh', 'msjh.ttc')
-    font_path = resource_filename(__name__, 'word_font/msyh.ttc')
-    print(font_path)
-
-
-    pdfmetrics.registerFont(TTFont('ChineseFont', font_path))
-
 except Exception as e:
     print(f"An error occurred: {e}")
     traceback.print_exc()
@@ -74,6 +66,17 @@ userInfo_Text=None
 stop_all_threads = False
 
 PDF_Title='上海交大慧聪达儿童专注力研究中心'
+
+# font_path = os.path.join('word_font', 'Chinese', 'zh', 'msjh.ttc')
+font_path = resource_filename(__name__, 'word_font/msyh.ttc')
+pdfmetrics.registerFont(TTFont('ChineseFont', font_path))
+# print(font_path)
+
+temp_path = resource_filename(__name__, 'fingerCache/')
+# temp_path = 'fingerCache'
+# print(temp_path)
+
+
 
 
 # 定义全局变量
@@ -112,9 +115,9 @@ feature = create_string_buffer(2048)  # 创建2048字节长的指纹特征，且
 
 dllinfo=""
 # 导入dll
-add_path1="WMRAPI.dll"
-add_path2="ftrScanAPI.dll"
-filelic="WMR08-Plus.lic"
+add_path1 = resource_filename(__name__, 'WMRAPI.dll') # add_path1="WMRAPI.dll"
+add_path2 = resource_filename(__name__, 'ftrScanAPI.dll') # add_path2="ftrScanAPI.dll"
+filelic = resource_filename(__name__, 'WMR08-Plus.lic') # filelic="WMR08-Plus.lic"
 dllExist1=os.path.exists(add_path1)
 dllExist2=os.path.exists(add_path2)
 fileExist=os.path.exists(add_path2)
@@ -135,7 +138,7 @@ def clear_finger_cache():
     cacheInfo=""
     try:
         # 定義目標資料夾名稱
-        target_folder_name = "fingerCache"
+        target_folder_name = temp_path #fingerCache
 
         # 建立完整的資料夾路徑
         target_folder_path = os.path.join(os.getcwd(), target_folder_name)
@@ -834,7 +837,7 @@ class means:
         print(f"圖片格式: {text}.{image_format}")
         MessageText(f"指纹图片格式: {text}.{image_format}\r\n")
         if bmpImage2 is not None:
-            output_path = f'fingerCache/{text}.bmp'  # 替換成你想保存的路徑
+            output_path = f'{temp_path}/{text}.bmp'  # 替換成你想保存的路徑 fingerCache
             bmpImage2.save(output_path)
             print(f"圖檔已成功輸出至: {output_path}")
             MessageText(f"指纹图档已成功输出至: {output_path}\r\n")
@@ -1227,7 +1230,7 @@ class means:
         print(f"暫存圖片格式: {finger_Text}.{image_format}")
         MessageText(f"暂存指纹图片格式: {finger_Text}.{image_format}\r\n")
         if bmpImage2 is not None:
-            output_path = f'fingerCache/{finger_Text}.bmp'  # 替換成你想保存的路徑
+            output_path = f'{temp_path}/{finger_Text}.bmp'  # 替換成你想保存的路徑 fingerCache
             bmpImage2.save(output_path)
             print(f"暫存圖檔已成功輸出至: {output_path}")
             MessageText(f"暂存指纹图档已成功输出至: {output_path}\r\n")
@@ -1270,7 +1273,7 @@ class means:
 
         # 確定按鈕的點擊動作
     def confirm_all_delete(window):
-        temp_folder_path = "fingerCache"
+        temp_folder_path = temp_path #fingerCache
         print('开始删除')
 
         fingers_text=left_fingers_text+right_fingers_text
@@ -1347,7 +1350,7 @@ class means:
         empty_photo = tkinter.PhotoImage()
         label.configure(image=empty_photo)
         label.image = None
-        temp_folder_path = "fingerCache"
+        temp_folder_path = temp_path #fingerCache
         # print(label.cget('text'),label.cget('image')!=None)
         for filename in os.listdir(temp_folder_path):
             file_path = os.path.join(temp_folder_path, filename)
@@ -1785,13 +1788,13 @@ class SavePDFFile:
 
         # 檢查 'finger' 資料夾中是否有指定檔案，有的話就加入 allHand
         for label_text in fingers:
-            image_path = os.path.join("fingerCache", f"{label_text}.bmp")
+            image_path = os.path.join(temp_path, f"{label_text}.bmp") # fingerCache
             if os.path.exists(image_path):
                 allFingers.append(label_text)
-                print(f"'{label_text}.bmp' 存在於 'fingerCache' 資料夾中")
+                print(f"'{label_text}.bmp' 存在於 {temp_path} 資料夾中") # fingerCache
                 # MessageText(f"'{label_text}.bmp' 存在于 'fingerCache' 资料夹中\r\n")
             else:
-                print(f"警告：'{label_text}.bmp' 不存在於 'fingerCache' 資料夾中")
+                print(f"警告：'{label_text}.bmp' 不存在於 {temp_path} 資料夾中")
                 # MessageText(f"警告：'{label_text}.bmp' 不存在于 'fingerCache' 资料夹中\r\n")
 
 
@@ -1865,9 +1868,9 @@ class SavePDFFile:
         for i, label in enumerate(all_fingers_labels):
 
             text = label.cget("text")
-            image_path = os.path.join("fingerCache", f"{text}.bmp")
+            image_path = os.path.join(temp_path, f"{text}.bmp") # fingerCache
                 
-            if os.path.exists(os.path.join("fingerCache", f"{text}.bmp")):
+            if os.path.exists(os.path.join(temp_path, f"{text}.bmp")): #fingerCache
                 # 構建圖檔路徑
 
                 y_position = page_height * 0.25  # 設置在每頁上半部分的中心
