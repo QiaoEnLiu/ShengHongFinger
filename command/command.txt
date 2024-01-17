@@ -1,0 +1,4 @@
+pyinstaller --onefile --name ShengHongFinger --add-data="word_font/*;word_font/" main.py
+pyinstaller --onefile --name ShengHongFinger main.py
+pyinstaller -y ShengHongFinger.spec
+pyinstaller --onefile --collect-all -y ShengHongFinger.spec

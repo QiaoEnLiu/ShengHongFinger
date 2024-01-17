@@ -1,20 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
-import os
-import sys
 
-# 獲取當前腳本的目錄
-current_script_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 block_cipher = None
 
 
 a = Analysis(
     ['main.py'],
-    pathex=[current_script_dir],
+    pathex=[],
     binaries=[],
-    datas=[('word_font\*','word_font'),
-            ('fingerCache', 'fingerCache')],
-    hiddenimports=[],
+    datas=[('word_font/*', 'word_font/'),('fingerCache/*','fingerCache')],
+    hiddenimports=['babel.numbers'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -47,4 +42,3 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
-

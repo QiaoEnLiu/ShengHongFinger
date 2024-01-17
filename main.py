@@ -27,7 +27,7 @@ try:
 
     from pkg_resources import resource_filename
 
-    import shutil, tempfile, traceback
+    import shutil, tempfile, traceback, textwrap
 
     from tkcalendar import DateEntry
 
@@ -35,7 +35,7 @@ try:
 
 
     # font_path = os.path.join('word_font', 'Chinese', 'zh', 'msjh.ttc')
-    font_path = resource_filename(__name__, 'word_font/msjh.ttc')
+    font_path = resource_filename(__name__, 'word_font/msyh.ttc')
     print(font_path)
 
 
@@ -46,8 +46,16 @@ except Exception as e:
     traceback.print_exc()
     input("Press Enter to exit")
 
+try:
+    # locale.setlocale(locale.LC_ALL, 'zh_CN.UTF-8')
+    locale.setlocale(locale.LC_TIME, 'zh_CN')
+except locale.Error as e:
+    print(f"Error setting default locale: {e}")
 
-locale.setlocale(locale.LC_TIME, 'zh_CN')
+
+# backup_Content=f'胜宏利用最先进的脑机介面BCI (Brain-computer interface)，致力于各项脑波演算法与脑波软硬体的开发，\n将脑波数据运用云端大数据平台加以分析，提供医疗及学术研究所需之各项用途，并且将脑波产品生活化，\n应用在教育、健康等方面，发挥其疲劳侦测、辅助睡眠、教育训练、情绪控制、睡眠品质监测等作用，藉此提升生活品质。'
+backup_Content='胜宏利用最先进的脑机介面BCI (Brain-computer interface)，致力于各项脑波演算法与脑波软硬体的开发，将脑波数据运用云端大数据平台加以分析，提供医疗及学术研究所需之各项用途，并且将脑波产品生活化，应用在教育、健康等方面，发挥其疲劳侦测、辅助睡眠、教育训练、情绪控制、睡眠品质监测等作用，藉此提升生活品质。'
+
 
 left_fingers_text=['左手小指','左手无名指','左手中指','左手食指','左手大拇指']
 right_fingers_text=['右手大拇指','右手食指','右手中指','右手无名指','右手小指']
@@ -64,6 +72,8 @@ right_hand_buttons = []
 
 userInfo_Text=None
 stop_all_threads = False
+
+PDF_Title='上海交大慧聪达儿童专注力研究中心'
 
 
 # 定义全局变量
@@ -129,22 +139,22 @@ def clear_finger_cache():
 
         # 建立完整的資料夾路徑
         target_folder_path = os.path.join(os.getcwd(), target_folder_name)
+        fingers_text=left_fingers_text+right_fingers_text
 
         # 檢查資料夾是否存在
         if os.path.exists(target_folder_path):
-            # 獲取資料夾內所有檔案及子資料夾
+            # 取得資料夾內所有檔案
             folder_content = os.listdir(target_folder_path)
 
-            # 刪除每個檔案
-            for item in folder_content:
-                item_path = os.path.join(target_folder_path, item)
-                
-                # 如果是檔案，則刪除
-                if os.path.isfile(item_path):
-                    os.remove(item_path)
-                # 如果是資料夾，則遞迴清空
-                elif os.path.isdir(item_path):
-                    shutil.rmtree(item_path)
+            # 遍歷每個檔案
+            for filename in folder_content:
+                file_path = os.path.join(target_folder_path, filename)
+
+                # 檢查檔案名稱是否包含清單中的任一字串
+                if any(finger_text in filename for finger_text in fingers_text):
+                     # 如果是檔案，則刪除
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
 
             print(f'成功清空資料夾內容：{target_folder_path}')
             cacheInfo=f'成功清空资料夹内容：{target_folder_path}\r\n'
@@ -275,13 +285,13 @@ def showUser(root):
     thread = threadGroup()
     # entry_Default = {"姓名": 'Joe', "性別": '男', "出生": '20111222', "住址": 'Taichung City, West Section, Taichung Road, 123',
     #                 "電話": '04123456789'}
-    entry_Default={"姓名":'胜宏精密科技',"性别":'男',"出生":'20111222',"住址":'412台中市大里区福大路41号',"电话":'0424865877'}
+    entry_Default={"姓名":'胜宏精密科技',"性别":'男',"出生":'20111222',"住址":'412台中市大里区福大路41号',"电话":'0424865877',"备註":""}
     entry_vars = {}
 
     internal_frame = ttk.Frame(userInfoFrame)
     internal_frame.grid(row=0, column=0)
 
-    for row, label in enumerate(["姓名", "性別", "出生", "住址", "电话"]):
+    for row, label in enumerate(["姓名", "性別", "出生", "住址", "电话","备註"]):
         label_widget = ttk.Label(internal_frame, text=label + ":", font=("Helvetica", 24))
         label_widget.grid(column=0, row=row, sticky="w", pady=10)
 
@@ -321,6 +331,13 @@ def showUser(root):
             phone_entry = ttk.Entry(internal_frame, font=("Helvetica", 20), textvariable=entry_var)
             phone_entry.grid(column=1, row=row, sticky="w", pady=5)
             entry_vars[label] = entry_var
+        elif label == "备註":
+            backup_text = tkinter.Text(internal_frame, font=("Helvetica", 16), wrap=tkinter.WORD, width=30, height=5)
+            backup_text.insert("1.0",backup_Content)
+            backup_text.grid(column=1, row=row, sticky="w", pady=5)
+            entry_var=backup_text.get("1.0",tkinter.END)
+            entry_vars[label] = entry_var
+
 
     # 提交按钮
     style = ttk.Style()
@@ -383,7 +400,7 @@ def ButtonGroup(root):
     allPictureDeleteButton = Button(root, text='删除所有指纹', width=12, height=1, font=(None,16), command=thread.allPicDelButton_Click)
     # savePictureFile = Button(root, text='储存图档',state = state, width=12, height=1, font=(None,16), command=thread.savePictureFileButton_Click)
     savePDF = Button(root, text='储存PDF档',state = tkinter.DISABLED, width=12, height=1, font=(None,16), command=thread.savePDF_Button_Click)
-    # testSavePDF = Button(root, text='测试PDF储存', width=12, height=1, font=(None,16), command=thread.testPDF_Button_Click)
+    testSavePDF = Button(root, text='测试PDF储存', width=12, height=1, font=(None,16), command=thread.testPDF_Button_Click)
 
     # 按钮的位置，范围0-1
     # openButton.place(relx=0.02, rely=0.01)
@@ -404,14 +421,14 @@ def ButtonGroup(root):
 
 
     openButton.place(relx=0.01, rely=0.01)
-    rollStartButton.place(relx=0.10, rely=0.01)
-    # allFingersButton.place(relx=0.19, rely=0.01)
-    allPictureDeleteButton.place(relx=0.19, rely=0.01)
-    stopButton.place(relx=0.28, rely=0.01)
-    savePDF.place(relx=0.37, rely=0.01)
-    # testSavePDF.place(relx=0.46, rely=0.01)
-    systemLogButton.place(relx=0.46, rely=0.01)
-    exitButton.place(relx=0.55, rely=0.01)
+    # rollStartButton.place(relx=0.10, rely=0.01)
+    # allFingersButton.place(relx=0.10, rely=0.01)
+    allPictureDeleteButton.place(relx=0.10, rely=0.01)
+    stopButton.place(relx=0.19, rely=0.01)
+    savePDF.place(relx=0.28, rely=0.01)
+    # testSavePDF.place(relx=0.37, rely=0.01)
+    systemLogButton.place(relx=0.37, rely=0.01)
+    exitButton.place(relx=0.46, rely=0.01)
 
     return [rollStartButton,featureButton,onCompareFingerButton,onCompareIdentifyButton,onCompareIdentifyNButton,stopButton,SingleDeleteButton,AllDeleteButton, allFingersButton,savePDF]
 #endregion
@@ -1083,20 +1100,29 @@ class means:
 
 
     def userInfoInterface(self):
-        collected_data = {label: var.get() for label, var in userInfo_Text.items()}
+
         # 設定模式對話框，阻止對主介面的互動
         
         info_window = tkinter.Toplevel()
         info_window.title("收集到的讯息")
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        
+        x_position = int((screen_width-720) / 2)
+        y_position = int((screen_height-720) / 2)
+        
+        # 使用 geometry 設置窗口位置
+        info_window.geometry(f"{720}x{720}+{x_position}+{y_position}")
         info_window.grab_set()
 
         info_message = f"收集到的讯息:\r\n"
         # 將資料顯示在新的視窗中
-        for row, (label, value) in enumerate(collected_data.items()):
-            label_widget = ttk.Label(info_window, text=f"{label}: {value}", font=("Helvetica", 24))
+        for row, (label, value) in enumerate(userInfo_Text.items()):
+            wrapped_text = textwrap.fill(value.get() if hasattr(value, 'get') else str(value), width=40)  # 設定包裝的寬度
+            label_widget = ttk.Label(info_window, text=f"{label}: {wrapped_text}", font=("Helvetica", 24), wraplength=720)
             label_widget.grid(column=0, row=row, sticky="w", pady=5, padx=10)
-            print(f"{label}: {value}")
-            info_message += f'{label}: {value}\r\n'
+            print(f"{label}: {wrapped_text}")
+            info_message += f'{label}: {wrapped_text}\r\n'
         MessageText(info_message)
 
 
@@ -1246,17 +1272,25 @@ class means:
     def confirm_all_delete(window):
         temp_folder_path = "fingerCache"
         print('开始删除')
+
+        fingers_text=left_fingers_text+right_fingers_text
+
         # 清空暫存資料夾
         empty_photo = tkinter.PhotoImage()
         for filename in os.listdir(temp_folder_path):
             file_path = os.path.join(temp_folder_path, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                print(f"无法删除 {file_path}: {e}")
+            # 檢查檔案名稱是否包含清單中的任一字串
+            if any(finger_text in filename for finger_text in fingers_text):
+                try:
+                    # 如果是檔案或符號連結，直接刪除
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    # 如果是資料夾，遞迴刪除整個資料夾結構
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    # 如果刪除過程中發生錯誤，印出錯誤訊息
+                    print(f"无法删除 {file_path}: {e}")
 
         for i in left_hand+right_hand:
             i.configure(image=empty_photo)
@@ -1738,6 +1772,7 @@ class FTRSCAN_IMAGE_SIZE(ctypes.Structure):
 class SavePDFFile:
     def __init__(self):
         self.finger_images = []
+        
 
     def create_pdf(self):
 
@@ -1778,22 +1813,49 @@ class SavePDFFile:
         # 創建一個PDF文件
         pdf_canvas = canvas.Canvas(pdf_filename)
         # 設置字型
+        title_font_size = 32
+        pdf_canvas.setFont('ChineseFont', title_font_size)
+        text_width = pdf_canvas.stringWidth(PDF_Title, fontSize=title_font_size)
+        x_mid_position = (pdf_canvas._pagesize[0] - text_width) / 2
+        pdf_canvas.setFillColorRGB(0,0,1)
+        pdf_canvas.drawString(x_mid_position, 750, PDF_Title)
+
         pdf_canvas.setFont('ChineseFont', 20)
+        pdf_canvas.setFillColorRGB(0,0,0)
 
         # 寫入資料到PDF
-        y_position = 750  # 起始位置
+        y_position = 650  # 起始位置
         for label, value in userInfo_Text.items():
-            text = f"{label}: {value.get()}"
-            pdf_canvas.drawString(100, y_position, text)
-            y_position -= 30  # 每行之間的垂直間距
+            if isinstance(value, tkinter.Text):
+                # 獲取 Text 內容，保留原始分行
+                original_text = value.get("1.0", "end-1c")
 
-            print(f"{label}: {value.get()}")
+                # 在內容超過右邊時進行額外的分行，允許英文單字跨行
+                wrapped_text = textwrap.fill(original_text, width=20, break_long_words=True)
 
-        # 在用戶信息之後，寫入左右手指名稱
-        y_position -= 30  # 加入一點垂直間距
+                # 分行繪製
+                lines = wrapped_text.split('\n')
+                for line in lines:
+                    pdf_canvas.drawString(100, y_position, f"{label}: {line}")
+                    y_position -= 40  # 每行之間的垂直間距
+            else:
+                # 非 Text 小部件，手動分行，確保每行不超過頁面的寬度
+                text = f"{label}: {str(value.get()) if hasattr(value, 'get') else str(value)}"
+                wrapped_text = textwrap.fill(text, width=20, break_long_words=True)  # 允許英文單字跨行
+                lines = wrapped_text.split('\n')
+                for line in lines:
+                    pdf_canvas.drawString(100, y_position, line)
+                    y_position -= 40  # 每行之間的垂直間距
+
+    
+        pdf_canvas.showPage()
+
+        # 在用戶信息之後，寫入左手及右手指名稱為目錄
+        y_position = 650  # 加入一點垂直間距
         for finger_name in allFingers:
+            pdf_canvas.setFont('ChineseFont', 24)
             pdf_canvas.drawString(100, y_position, f"--{finger_name}")
-            y_position -= 30  # 每行之間的垂直間距
+            y_position -= 40  # 每行之間的垂直間距
         pdf_canvas.showPage()
 
 
@@ -1850,21 +1912,44 @@ class SavePDFFile:
 
         # 如果使用者取消選擇，則不執行以下程式
         if pdf_file_path:
+            # 使用 reportlab 來建立 PDF
             # 創建一個PDF文件
             pdf_canvas = canvas.Canvas(pdf_file_path)
-
+    
             # 設置字型
+            title_font_size = 32
+            pdf_canvas.setFont('ChineseFont', title_font_size)
+            text_width = pdf_canvas.stringWidth(PDF_Title, fontSize=title_font_size)
+            x_mid_position = (pdf_canvas._pagesize[0] - text_width) / 2
+            pdf_canvas.setFillColorRGB(0,0,1)
+            pdf_canvas.drawString(x_mid_position, 750, PDF_Title)
+
             pdf_canvas.setFont('ChineseFont', 20)
+            pdf_canvas.setFillColorRGB(0,0,0)
 
             # 寫入資料到PDF
-            y_position = 750  # 起始位置
+            y_position = 650  # 起始位置
             for label, value in userInfo_Text.items():
-                text = f"{label}: {value.get()}"
-                pdf_canvas.drawString(100, y_position, text)
-                y_position -= 30  # 每行之間的垂直間距
+                if isinstance(value, tkinter.Text):
+                    # 獲取 Text 內容，保留原始分行
+                    original_text = value.get("1.0", "end-1c")
 
-                print(f"{label}: {value.get()}")
+                    # 在內容超過右邊時進行額外的分行，允許英文單字跨行
+                    wrapped_text = textwrap.fill(original_text, width=20, break_long_words=True)
 
+                    # 分行繪製
+                    lines = wrapped_text.split('\n')
+                    for line in lines:
+                        pdf_canvas.drawString(100, y_position, f"{label}: {line}")
+                        y_position -= 40  # 每行之間的垂直間距
+                else:
+                    # 非 Text 小部件，手動分行，確保每行不超過頁面的寬度
+                    text = f"{label}: {str(value.get()) if hasattr(value, 'get') else str(value)}"
+                    wrapped_text = textwrap.fill(text, width=20, break_long_words=True)  # 允許英文單字跨行
+                    lines = wrapped_text.split('\n')
+                    for line in lines:
+                        pdf_canvas.drawString(100, y_position, line)
+                        y_position -= 40  # 每行之間的垂直間距
             # 保存PDF文件
             pdf_canvas.save()
 
