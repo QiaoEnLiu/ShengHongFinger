@@ -167,7 +167,16 @@ def UI():
     root.geometry('1920x1080')  # 窗口大小，这里的乘号不是 * ，而是小写英文字母 x
     screen_width = root.winfo_screenwidth()  # 显示屏大小
     screen_height = root.winfo_screenheight()  # 显示屏大小
-    root.geometry(f'1920x1080+{round((screen_width - 1920) / 2)}+{round((screen_height - 1080) / 2)}')
+
+    # 判斷顯示屏大小是否為1920x1080
+    if screen_width == 1920 and screen_height == 1080:
+        # 使用全螢幕模式
+        root.attributes('-fullscreen', True)
+    else:
+        # 設定視窗大小和位置
+        root.geometry(f'1920x1080+{round((screen_width - 1920) / 2)}+{round((screen_height - 1080) / 2)}')
+        root.resizable(0, 0)
+
     root.resizable(0, 0)  # 固定窗口大小，不能随意伸缩
     root.protocol('WM_DELETE_WINDOW', mean.Exit)
     auxiliary.icoImage()
