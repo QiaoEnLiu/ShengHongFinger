@@ -49,8 +49,8 @@ except Exception as e:
 
 locale.setlocale(locale.LC_TIME, 'zh_CN')
 
-left_fingers_text=['左手小指','左手無名指','左手中指','左手食指','左手大拇指']
-right_fingers_text=['右手大拇指','右手食指','右手中指','右手無名指','右手小指']
+left_fingers_text=['左手小指','左手无名指','左手中指','左手食指','左手大拇指']
+right_fingers_text=['右手大拇指','右手食指','右手中指','右手无名指','右手小指']
 
 global left_hand, left_Pinky, left_Ring, left_Middle, left_Index, left_Thumb
 global right_hand, right_Thumb, right_Index, right_Middle, right_Ring, right_Pinky
@@ -147,13 +147,13 @@ def clear_finger_cache():
                     shutil.rmtree(item_path)
 
             print(f'成功清空資料夾內容：{target_folder_path}')
-            cacheInfo=f'成功清空資料夾內容：{target_folder_path}\r\n'
+            cacheInfo=f'成功清空资料夹内容：{target_folder_path}\r\n'
         else:
             print(f'資料夾不存在：{target_folder_path}')
-            cacheInfo=f'資料夾不存在：{target_folder_path}\r\n'
+            cacheInfo=f'资料夹不存在：{target_folder_path}\r\n'
     except Exception as e:
         print(f'清空資料夾內容時發生錯誤：{e}')
-        cacheInfo=f'資料夾不存在：{target_folder_path}\r\n'
+        cacheInfo=f'资料夹不存在：{target_folder_path}\r\n'
 
     MessageText(cacheInfo)
 #endregion
@@ -210,12 +210,12 @@ def showImage1(root):
 
     
     lableShowImage1 = Label(labFrame)  # 包含图片的标签
-    lableShowImage1.config(text='每幀圖測試',compound=tkinter.BOTTOM,font=(None,18))
+    lableShowImage1.config(text='每帧图显示',compound=tkinter.BOTTOM,font=(None,18))
     lableShowImage1.place(relx=0, rely=0.025)
     # lableShowImage1.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage1))
 
     lableShowImage2 = Label(labFrame)  # 包含图片的标签
-    lableShowImage2.config(text='每幀圖合成',compound=tkinter.BOTTOM,font=(None,18))
+    lableShowImage2.config(text='每帧图合成',compound=tkinter.BOTTOM,font=(None,18))
     lableShowImage2.place(relx=0, rely=0.525)
     # lableShowImage2.bind("<Button-1>", lambda e: auxiliary.my_label(e, bmpImage2))
 
@@ -235,10 +235,10 @@ def showImage1(root):
 
 
     for i in range(5):
-        left_button = Button(labFrame, font=(None,18),width=12, text='採集'+left_fingers_text[i],state=state,
+        left_button = Button(labFrame, font=(None,18),width=12, text='采集'+left_fingers_text[i],state=state,
                               command=lambda i=i: thread.fingerPrint_Click(left_hand_labels[i],left_fingers_text[i]))
         
-        right_button = Button(labFrame, font=(None,18),width=12, text='採集'+right_fingers_text[i],state=state,
+        right_button = Button(labFrame, font=(None,18),width=12, text='采集'+right_fingers_text[i],state=state,
                                command=lambda i=i: thread.fingerPrint_Click(right_hand_labels[i],right_fingers_text[i]))
 
         left_button.place(relx=0.155 + i*0.165, rely=0.010)
@@ -260,19 +260,19 @@ def showImage1(root):
 #region 使用者資料
 def showUser(root):
     global userInfo_Text
-    userInfoFrame = LabelFrame(root, text="使用者資料", padx=75, relief=GROOVE, font=(None, 20)) # 使用者資料
+    userInfoFrame = LabelFrame(root, text="使用者讯息", padx=75, relief=GROOVE, font=(None, 20)) # 使用者資料
     userInfoFrame.place(relx=0.675, rely=0.05)
 
     thread = threadGroup()
     # entry_Default = {"姓名": 'Joe', "性別": '男', "出生": '20111222', "住址": 'Taichung City, West Section, Taichung Road, 123',
     #                 "電話": '04123456789'}
-    entry_Default={"姓名":'勝宏精密科技',"性別":'男',"出生":'20111222',"住址":'412台中市大里區福大路41號',"電話":'0424865877'}
+    entry_Default={"姓名":'胜宏精密科技',"性别":'男',"出生":'20111222',"住址":'412台中市大里区福大路41号',"电话":'0424865877'}
     entry_vars = {}
 
     internal_frame = ttk.Frame(userInfoFrame)
     internal_frame.grid(row=0, column=0)
 
-    for row, label in enumerate(["姓名", "性別", "出生", "住址", "電話"]):
+    for row, label in enumerate(["姓名", "性別", "出生", "住址", "电话"]):
         label_widget = ttk.Label(internal_frame, text=label + ":", font=("Helvetica", 24))
         label_widget.grid(column=0, row=row, sticky="w", pady=10)
 
@@ -308,7 +308,7 @@ def showUser(root):
             address_text = ttk.Entry(internal_frame, font=('Helvetica', 20), textvariable=entry_var)
             address_text.grid(column=1, row=row, sticky="w", pady=5)
             entry_vars[label] = entry_var
-        elif label == "電話":
+        elif label == "电话":
             phone_entry = ttk.Entry(internal_frame, font=("Helvetica", 20), textvariable=entry_var)
             phone_entry.grid(column=1, row=row, sticky="w", pady=5)
             entry_vars[label] = entry_var
@@ -316,7 +316,7 @@ def showUser(root):
     # 提交按钮
     style = ttk.Style()
     style.configure('TButton', font=('Helvetica', 20))  # 設定按鈕的字型
-    submit_button = ttk.Button(userInfoFrame, text="使用者資料預覽", command=thread.getUserInfo_Click, style='TButton')
+    submit_button = ttk.Button(userInfoFrame, text="使用者讯息预览", command=thread.getUserInfo_Click, style='TButton')
     submit_button.grid(column=0, row=6, columnspan=3, pady=10)  # 跨越三列
 
     userInfo_Text = entry_vars
@@ -369,12 +369,12 @@ def ButtonGroup(root):
     AllDeleteButton = Button(root, text='清空指纹库', state=state, width=12, height=1, font=font,command=mean.AllDelete)
     exitButton = Button(root, text='退出', width=12, height=1, font=font, command=mean.Exit)
 
-    systemLogButton = Button(root, text='系統日誌', width=12, height=1, font=(None,16), command=thread.systemLogButton_Click)
-    allFingersButton = Button(root, text='採集所有指紋',state = state, width=12, height=1, font=(None,16), command=thread.allFingersButton_Click)
-    allPictureDeleteButton = Button(root, text='刪除所有圖片', width=12, height=1, font=(None,16), command=thread.allPicDelButton_Click)
-    # savePictureFile = Button(root, text='儲存圖檔',state = state, width=12, height=1, font=(None,16), command=thread.savePictureFileButton_Click)
-    savePDF = Button(root, text='儲存PDF檔',state = tkinter.DISABLED, width=12, height=1, font=(None,16), command=thread.savePDF_Button_Click)
-    # testSavePDF = Button(root, text='測試PDF儲存', width=12, height=1, font=(None,16), command=thread.testPDF_Button_Click)
+    systemLogButton = Button(root, text='系统日誌', width=12, height=1, font=(None,16), command=thread.systemLogButton_Click)
+    allFingersButton = Button(root, text='採集所有指纹',state = state, width=12, height=1, font=(None,16), command=thread.allFingersButton_Click)
+    allPictureDeleteButton = Button(root, text='删除所有指纹', width=12, height=1, font=(None,16), command=thread.allPicDelButton_Click)
+    # savePictureFile = Button(root, text='储存图档',state = state, width=12, height=1, font=(None,16), command=thread.savePictureFileButton_Click)
+    savePDF = Button(root, text='储存PDF档',state = tkinter.DISABLED, width=12, height=1, font=(None,16), command=thread.savePDF_Button_Click)
+    # testSavePDF = Button(root, text='测试PDF储存', width=12, height=1, font=(None,16), command=thread.testPDF_Button_Click)
 
     # 按钮的位置，范围0-1
     # openButton.place(relx=0.02, rely=0.01)
@@ -468,7 +468,7 @@ class threadGroup:
                 fingers_text = self.all_finger_text[self.current_finger_index]
                 finger = self.all_finger[self.current_finger_index]
 
-                fingers_label.config(text="採集" + fingers_text)
+                fingers_label.config(text="采集" + fingers_text)
                 fingers_label.text = fingers_text
                 print(fingers_text + "\r\n")
                 MessageText(fingers_text + "\r\n")
@@ -484,7 +484,7 @@ class threadGroup:
                     check_thread_completion(open_thread)
                 else:
                     print("手動停止\r\n")
-                    MessageText("手動停止\r\n")
+                    MessageText("手动停止\r\n")
 
         def check_thread_completion(thread):
             if thread.is_alive() and not stop_all_threads:
@@ -497,7 +497,7 @@ class threadGroup:
 
         clear_finger_cache()
         print('採集所有手指')
-        MessageText("開始採集所有手指\r\n")
+        MessageText("开始采集所有指纹\r\n")
 
         for i in self.all_finger:
             i.config(text='', image='')
@@ -519,17 +519,17 @@ class threadGroup:
 
     def savePictureFileButton_Click(self):
         print('儲存圖檔')
-        MessageText("儲存圖檔\r\n")
+        MessageText("储存图档\r\n")
 
     def savePDF_Button_Click(self):
         print('儲存PDF')
-        MessageText("儲存PDF\r\n")
+        MessageText("储存PDF\r\n")
         SavePDFFile.create_pdf(self)
 
 
     def testPDF_Button_Click(self):
         print('測試PDF')
-        MessageText("測試PDF\r\n")
+        MessageText("测试PDF\r\n")
         SavePDFFile.test_creat_PDF(self)
 
 
@@ -538,7 +538,7 @@ class threadGroup:
 
 
         print('取得使用者資訊')
-        MessageText(f"取得使用者資訊\r\n")
+        MessageText(f"取得使用者资讯\r\n")
         # 在這裡處理 user_info_text_content
         # 示範：顯示收集到的資料
 
@@ -548,13 +548,13 @@ class threadGroup:
 
 
     def fingerPrint_Click(self,finger_label,finger_Text):
-        MessageText(f'開姞掃描{finger_Text}\r\n')
+        MessageText(f'开姞扫描{finger_Text}\r\n')
 
         for i in left_hand_buttons+right_hand_buttons:
             i.config(state=tkinter.DISABLED)
             # print(i.cget('text')[2:],'狀態：', i.cget('state'))
             if i.cget('text')[2:]==finger_label.cget('text'):
-                print('採集中：',finger_label.cget('text'))
+                print('采集中：',finger_label.cget('text'))
         
         mean = means()
         verify_thread = threading.Thread(target=mean.fingerPrint, args=(finger_label,finger_Text,))
@@ -806,15 +806,15 @@ class means:
         finger.config(text=text, image=self.finger_images[-1], compound=tkinter.BOTTOM)
         image_format = roiImg.format
         print(f"圖片格式: {text}.{image_format}")
-        MessageText(f"圖片格式: {text}.{image_format}\r\n")
+        MessageText(f"指纹图片格式: {text}.{image_format}\r\n")
         if bmpImage2 is not None:
             output_path = f'fingerCache/{text}.bmp'  # 替換成你想保存的路徑
             bmpImage2.save(output_path)
             print(f"圖檔已成功輸出至: {output_path}")
-            MessageText(f"圖檔已成功輸出至: {output_path}\r\n")
+            MessageText(f"指纹图档已成功输出至: {output_path}\r\n")
         else:
             print("未獲取有效的圖檔來進行輸出")
-            MessageText(f"未獲取有效的圖檔來進行輸出\r\n")
+            MessageText(f"未获取有效的指纹图档来进行输出\r\n")
                     
         # finger_image = PhotoImage(data=finger.tk.call(finger._w, "image", "-data", finger._w))
         # finger.config(text=text, image=finger_image, compound=tkinter.BOTTOM)
@@ -1056,7 +1056,7 @@ class means:
     def systemLogInterface(self):
         global text
         print('查看系統日誌')
-        MessageText("查看系統日誌\r\n")
+        MessageText("查看系统日誌\r\n")
 
         # 創建主視窗
         logRoot = tkinter.Tk()
@@ -1078,10 +1078,10 @@ class means:
         # 設定模式對話框，阻止對主介面的互動
         
         info_window = tkinter.Toplevel()
-        info_window.title("收集到的資料")
+        info_window.title("收集到的讯息")
         info_window.grab_set()
 
-        info_message = f"收集到的資料:\r\n"
+        info_message = f"收集到的讯息:\r\n"
         # 將資料顯示在新的視窗中
         for row, (label, value) in enumerate(collected_data.items()):
             label_widget = ttk.Label(info_window, text=f"{label}: {value}", font=("Helvetica", 24))
@@ -1092,7 +1092,7 @@ class means:
 
 
         # 加入一個關閉按鈕
-        close_button = ttk.Button(info_window, text="關閉", command=lambda: releaseAndClose(info_window))
+        close_button = ttk.Button(info_window, text="关闭", command=lambda: releaseAndClose(info_window))
         close_button.grid(column=0, row=row + 1, columnspan=2, pady=10)
 
 
@@ -1106,7 +1106,7 @@ class means:
         
 
         print(f"請按下{finger_Text}")
-        MessageText(f"請按下{finger_Text}\r\n")
+        MessageText(f"请按下{finger_Text}\r\n")
         global isOpen, isRunning, message, ShowImage1, ShowImage2, bmpImage1, bmpImage2
         WMRAPI = WMRAPI_Dll()
         auxiliary=auxiliaryMeans()
@@ -1155,8 +1155,8 @@ class means:
                 for i in left_hand_buttons+right_hand_buttons:
                     i.config(state=tkinter.NORMAL)
                     if i.cget('text')[2:]==finger_label.cget('text'):
-                        print('採集結束：',finger_label.cget('text'))
-                        MessageText('採集結束：'+finger_label.cget('text'))
+                        print('采集结束：',finger_label.cget('text'))
+                        MessageText('采集结束：'+finger_label.cget('text'))
 
                 break
             print(RAW)
@@ -1190,25 +1190,25 @@ class means:
         finger_label.config(text=finger_Text, image=self.finger_images[-1], compound=tkinter.BOTTOM)
         image_format = roiImg.format
         print(f"暫存圖片格式: {finger_Text}.{image_format}")
-        MessageText(f"暫存圖片格式: {finger_Text}.{image_format}\r\n")
+        MessageText(f"暂存指纹图片格式: {finger_Text}.{image_format}\r\n")
         if bmpImage2 is not None:
             output_path = f'fingerCache/{finger_Text}.bmp'  # 替換成你想保存的路徑
             bmpImage2.save(output_path)
             print(f"暫存圖檔已成功輸出至: {output_path}")
-            MessageText(f"暫存圖檔已成功輸出至: {output_path}\r\n")
+            MessageText(f"暂存指纹图档已成功输出至: {output_path}\r\n")
         else:
             print("未獲取有效的暫存圖檔來進行輸出")
-            MessageText(f"未獲取有效的暫存圖檔來進行輸出\r\n")
+            MessageText(f"未获取有效的指纹图档来进行输出\r\n")
 
 
     #region allPicDel
     def allPicDel(self):
 
         print("刪除所有暫存圖片\r\n")
-        MessageText("刪除所有暫存圖片\r\n")
+        MessageText("删除所有暂存指纹\r\n")
         
         confirmation_window = tkinter.Toplevel()
-        confirmation_window.title(f"確認刪除所有指紋")
+        confirmation_window.title(f"确认删除所有指纹")
 
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
@@ -1221,11 +1221,11 @@ class means:
         confirmation_window.grab_set()
 
         # 在新窗口中顯示提示信息
-        message_label = Label(confirmation_window, text=f"確定要刪除所有指紋的圖片嗎？", font=(None, 24))
+        message_label = Label(confirmation_window, text=f"确定要删除所有暂存的指纹吗？", font=(None, 24))
         message_label.pack(padx=10, pady=10)
 
         # 確定按鈕
-        confirm_button = Button(confirmation_window, text="確定", font=(None, 24), command=lambda: means.confirm_all_delete(window=confirmation_window))
+        confirm_button = Button(confirmation_window, text="确定", font=(None, 24), command=lambda: means.confirm_all_delete(window=confirmation_window))
         confirm_button.pack(side=tkinter.LEFT, padx=10)
 
         # 取消按鈕
@@ -1236,7 +1236,7 @@ class means:
         # 確定按鈕的點擊動作
     def confirm_all_delete(window):
         temp_folder_path = "fingerCache"
-        print('開始刪除')
+        print('开始删除')
         # 清空暫存資料夾
         empty_photo = tkinter.PhotoImage()
         for filename in os.listdir(temp_folder_path):
@@ -1247,14 +1247,14 @@ class means:
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception as e:
-                print(f"無法刪除 {file_path}: {e}")
+                print(f"无法删除 {file_path}: {e}")
 
         for i in left_hand+right_hand:
             i.configure(image=empty_photo)
             i.image=None
             print('刪除:',i.cget('text'),i.cget('image')=='')
 
-        MessageText(f"刪除全部指紋\r\n")
+        MessageText(f"删除全部指纹\r\n")
 
         window.destroy()
 
@@ -1264,18 +1264,18 @@ class means:
             if i.cget('image')!=None:
                 print('保留：',i.cget('text'))
 
-        MessageText(f"取消刪除所有指紋\r\n")
+        MessageText(f"取消删除所有指纹\r\n")
         window.destroy()
     #endregion
         
     #region picDel
     def picDel(self,label_text):
-        print(f'刪除{label_text}指紋')
+        print(f'删除{label_text}指纹')
 
         for i in left_hand+right_hand:
             if i.cget('text')==label_text and i.cget('image')!=None:
                 confirmation_window = tkinter.Toplevel()
-                confirmation_window.title(f"確認刪除{label_text}")
+                confirmation_window.title(f"确认删除{label_text}")
 
                 screen_width = root.winfo_screenwidth()
                 screen_height = root.winfo_screenheight()
@@ -1288,11 +1288,11 @@ class means:
                 confirmation_window.grab_set()
 
                 # 在新窗口中顯示提示信息
-                message_label = Label(confirmation_window, text=f"確定要刪除 {label_text} 的圖片嗎？", font=(None, 24))
+                message_label = Label(confirmation_window, text=f"确定要删除 {label_text} 吗？", font=(None, 24))
                 message_label.pack(padx=10, pady=10)
 
                 # 確定按鈕
-                confirm_button = Button(confirmation_window, text="確定", font=(None, 24), command=lambda i=i: means.confirm_pic_delete(i,confirmation_window))
+                confirm_button = Button(confirmation_window, text="确定", font=(None, 24), command=lambda i=i: means.confirm_pic_delete(i,confirmation_window))
                 confirm_button.pack(side=tkinter.LEFT, padx=10)
 
                 # 取消按鈕
@@ -1316,11 +1316,11 @@ class means:
                         shutil.rmtree(file_path)
                     print(label.cget('text'),label.cget('image')!=None)
 
-                    MessageText(f"{label.cget('text')}已被刪除\r\n")
-                    MessageText(f"暫存圖檔已被刪除: {file_path}\r\n")
+                    MessageText(f"{label.cget('text')}已被删除\r\n")
+                    MessageText(f"暂存档已被删除: {file_path}\r\n")
             except Exception as e:
                 print(f"無法刪除 {file_path}: {e}")
-                MessageText(f"無法刪除 {file_path}: {e}\r\n")
+                MessageText(f"无法删除 {file_path}: {e}\r\n")
 
         # label.image = None
         window.destroy()
@@ -1328,7 +1328,7 @@ class means:
     # 取消按鈕的點擊動作
     def cancel_pic_delete(label,window):
         print(label.cget('text'),label.cget('image')!=None)
-        MessageText(f"{label.cget('text')}取消刪除\r\n")
+        MessageText(f"{label.cget('text')}取消删除\r\n")
         window.destroy()
 
     #endregion
@@ -1745,24 +1745,24 @@ class SavePDFFile:
             if os.path.exists(image_path):
                 allFingers.append(label_text)
                 print(f"'{label_text}.bmp' 存在於 'fingerCache' 資料夾中")
-                # MessageText(f"'{label_text}.bmp' 存在於 'fingerCache' 資料夾中\r\n")
+                # MessageText(f"'{label_text}.bmp' 存在于 'fingerCache' 资料夹中\r\n")
             else:
                 print(f"警告：'{label_text}.bmp' 不存在於 'fingerCache' 資料夾中")
-                # MessageText(f"警告：'{label_text}.bmp' 不存在於 'fingerCache' 資料夾中\r\n")
+                # MessageText(f"警告：'{label_text}.bmp' 不存在于 'fingerCache' 资料夹中\r\n")
 
 
         # 使用 filedialog.asksaveasfilename 讓使用者選擇 PDF 的名稱
         pdf_filename = filedialog.asksaveasfilename(
             initialdir=os.getcwd(),
             initialfile=name,
-            title="儲存為",
+            title="储存为",
             filetypes=[("PDF files", "*.pdf")],
             defaultextension=".pdf"
         )
 
         if not pdf_filename:
             print("請輸入 PDF 檔案名稱。")
-            MessageText("請輸入 PDF 檔案名稱。\r\n")
+            MessageText("请输入 PDF 档案名称。\r\n")
             return
 
         # 使用 reportlab 來建立 PDF
@@ -1820,7 +1820,7 @@ class SavePDFFile:
         pdf_canvas.save()
 
         print(f"成功建立新的 PDF 檔案至 {pdf_filename}")
-        MessageText(f"成功建立新的 PDF 檔案至 {pdf_filename}\r\n")
+        MessageText(f"成功建立新的 PDF 档案至 {pdf_filename}\r\n")
 
     @staticmethod
     def load_image(filename):
@@ -1834,7 +1834,7 @@ class SavePDFFile:
 
     def test_creat_PDF(self):
         print('測試PDF儲存')
-        MessageText("測試PDF儲存\r\n")
+        MessageText("测试PDF储存\r\n")
         name = userInfo_Text["姓名"].get()
         pdf_file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")],
                                                   initialfile=name)
@@ -1861,11 +1861,11 @@ class SavePDFFile:
 
         elif not pdf_file_path:
             print("測試PDF取消儲存")
-            MessageText("測試PDF取消儲存\r\n")
+            MessageText("测试PDF取消储存\r\n")
             return
 
         print('測試PDF儲存成功')
-        MessageText("測試PDF儲存成功\r\n")
+        MessageText("测试PDF储存成功\r\n")
 
 
 #endregion
