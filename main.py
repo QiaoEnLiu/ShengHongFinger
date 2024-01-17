@@ -369,12 +369,12 @@ def ButtonGroup(root):
     AllDeleteButton = Button(root, text='清空指纹库', state=state, width=12, height=1, font=font,command=mean.AllDelete)
     exitButton = Button(root, text='退出', width=12, height=1, font=font, command=mean.Exit)
 
-    # systemLogButton = Button(root, text='系統日誌', width=12, height=1, font=(None,16), command=thread.systemLogButton_Click)
-    allFingersButton = Button(root, text='採集所有手指',state = state, width=12, height=1, font=(None,16), command=thread.allFingersButton_Click)
+    systemLogButton = Button(root, text='系統日誌', width=12, height=1, font=(None,16), command=thread.systemLogButton_Click)
+    allFingersButton = Button(root, text='採集所有指紋',state = state, width=12, height=1, font=(None,16), command=thread.allFingersButton_Click)
     allPictureDeleteButton = Button(root, text='刪除所有圖片', width=12, height=1, font=(None,16), command=thread.allPicDelButton_Click)
-    savePictureFile = Button(root, text='儲存圖檔',state = state, width=12, height=1, font=(None,16), command=thread.savePictureFileButton_Click)
+    # savePictureFile = Button(root, text='儲存圖檔',state = state, width=12, height=1, font=(None,16), command=thread.savePictureFileButton_Click)
     savePDF = Button(root, text='儲存PDF檔',state = tkinter.DISABLED, width=12, height=1, font=(None,16), command=thread.savePDF_Button_Click)
-    testSavePDF = Button(root, text='測試PDF儲存', width=12, height=1, font=(None,16), command=thread.testPDF_Button_Click)
+    # testSavePDF = Button(root, text='測試PDF儲存', width=12, height=1, font=(None,16), command=thread.testPDF_Button_Click)
 
     # 按钮的位置，范围0-1
     # openButton.place(relx=0.02, rely=0.01)
@@ -400,8 +400,8 @@ def ButtonGroup(root):
     allPictureDeleteButton.place(relx=0.19, rely=0.01)
     stopButton.place(relx=0.28, rely=0.01)
     savePDF.place(relx=0.37, rely=0.01)
-    testSavePDF.place(relx=0.46, rely=0.01)
-    # systemLogButton.place(relx=0.55, rely=0.01)
+    # testSavePDF.place(relx=0.46, rely=0.01)
+    systemLogButton.place(relx=0.46, rely=0.01)
     exitButton.place(relx=0.55, rely=0.01)
 
     return [rollStartButton,featureButton,onCompareFingerButton,onCompareIdentifyButton,onCompareIdentifyNButton,stopButton,SingleDeleteButton,AllDeleteButton, allFingersButton,savePDF]
@@ -1209,6 +1209,15 @@ class means:
         
         confirmation_window = tkinter.Toplevel()
         confirmation_window.title(f"確認刪除所有指紋")
+
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        
+        x_position = int((screen_width-600) / 2)
+        y_position = int((screen_height-200) / 2)
+        
+        # 使用 geometry 設置窗口位置
+        confirmation_window.geometry(f"{600}x{200}+{x_position}+{y_position}")
         confirmation_window.grab_set()
 
         # 在新窗口中顯示提示信息
@@ -1217,11 +1226,12 @@ class means:
 
         # 確定按鈕
         confirm_button = Button(confirmation_window, text="確定", font=(None, 24), command=lambda: means.confirm_all_delete(window=confirmation_window))
-        confirm_button.pack(side=tkinter.LEFT, padx=5)
+        confirm_button.pack(side=tkinter.LEFT, padx=10)
 
         # 取消按鈕
         cancel_button = Button(confirmation_window, text="取消", font=(None, 24), command=lambda: means.cancel_all_delete(window=confirmation_window))
-        cancel_button.pack(side=tkinter.RIGHT, padx=5)
+        cancel_button.pack(side=tkinter.RIGHT, padx=10)
+
 
         # 確定按鈕的點擊動作
     def confirm_all_delete(window):
@@ -1266,6 +1276,15 @@ class means:
             if i.cget('text')==label_text and i.cget('image')!=None:
                 confirmation_window = tkinter.Toplevel()
                 confirmation_window.title(f"確認刪除{label_text}")
+
+                screen_width = root.winfo_screenwidth()
+                screen_height = root.winfo_screenheight()
+                
+                x_position = int((screen_width-600) / 2)
+                y_position = int((screen_height-200) / 2)
+                
+                # 使用 geometry 設置窗口位置
+                confirmation_window.geometry(f"{600}x{200}+{x_position}+{y_position}")
                 confirmation_window.grab_set()
 
                 # 在新窗口中顯示提示信息
@@ -1274,11 +1293,11 @@ class means:
 
                 # 確定按鈕
                 confirm_button = Button(confirmation_window, text="確定", font=(None, 24), command=lambda i=i: means.confirm_pic_delete(i,confirmation_window))
-                confirm_button.pack(side=tkinter.LEFT, padx=5)
+                confirm_button.pack(side=tkinter.LEFT, padx=10)
 
                 # 取消按鈕
                 cancel_button = Button(confirmation_window, text="取消", font=(None, 24), command=lambda i=i: means.cancel_pic_delete(i,confirmation_window))
-                cancel_button.pack(side=tkinter.RIGHT, padx=5)
+                cancel_button.pack(side=tkinter.RIGHT, padx=10)
 
     # 確定按鈕的點擊動作
     def confirm_pic_delete(label,window):
@@ -1296,7 +1315,9 @@ class means:
                     elif os.path.isdir(file_path):
                         shutil.rmtree(file_path)
                     print(label.cget('text'),label.cget('image')!=None)
+
                     MessageText(f"{label.cget('text')}已被刪除\r\n")
+                    MessageText(f"暫存圖檔已被刪除: {file_path}\r\n")
             except Exception as e:
                 print(f"無法刪除 {file_path}: {e}")
                 MessageText(f"無法刪除 {file_path}: {e}\r\n")
@@ -1711,9 +1732,12 @@ class SavePDFFile:
 
     def create_pdf(self):
 
+        name = userInfo_Text["姓名"].get()
+
         fingers=left_fingers_text+right_fingers_text
         all_fingers_labels=left_hand_labels+right_hand_labels
         allFingers=[]
+
 
         # 檢查 'finger' 資料夾中是否有指定檔案，有的話就加入 allHand
         for label_text in fingers:
@@ -1721,26 +1745,16 @@ class SavePDFFile:
             if os.path.exists(image_path):
                 allFingers.append(label_text)
                 print(f"'{label_text}.bmp' 存在於 'fingerCache' 資料夾中")
-                MessageText(f"'{label_text}.bmp' 存在於 'fingerCache' 資料夾中\r\n")
+                # MessageText(f"'{label_text}.bmp' 存在於 'fingerCache' 資料夾中\r\n")
             else:
                 print(f"警告：'{label_text}.bmp' 不存在於 'fingerCache' 資料夾中")
-                MessageText(f"警告：'{label_text}.bmp' 不存在於 'fingerCache' 資料夾中\r\n")
+                # MessageText(f"警告：'{label_text}.bmp' 不存在於 'fingerCache' 資料夾中\r\n")
 
-        # 檢查指紋數量是否滿十枚
-        if len(allFingers) < 10:
-            warning_message = "指紋數量不足十枚，無法建立完整手指 PDF。"
-            print(warning_message)
-            MessageText(f"{warning_message}\r\n")
-
-            # 顯示警告視窗
-            tkinter.messagebox.showwarning("警告", warning_message)
-            return
-
-           
 
         # 使用 filedialog.asksaveasfilename 讓使用者選擇 PDF 的名稱
         pdf_filename = filedialog.asksaveasfilename(
             initialdir=os.getcwd(),
+            initialfile=name,
             title="儲存為",
             filetypes=[("PDF files", "*.pdf")],
             defaultextension=".pdf"
@@ -1752,32 +1766,56 @@ class SavePDFFile:
             return
 
         # 使用 reportlab 來建立 PDF
+        # 創建一個PDF文件
         pdf_canvas = canvas.Canvas(pdf_filename)
+        # 設置字型
+        pdf_canvas.setFont('ChineseFont', 20)
+
+        # 寫入資料到PDF
+        y_position = 750  # 起始位置
+        for label, value in userInfo_Text.items():
+            text = f"{label}: {value.get()}"
+            pdf_canvas.drawString(100, y_position, text)
+            y_position -= 30  # 每行之間的垂直間距
+
+            print(f"{label}: {value.get()}")
+
+        # 在用戶信息之後，寫入左右手指名稱
+        y_position -= 30  # 加入一點垂直間距
+        for finger_name in allFingers:
+            pdf_canvas.drawString(100, y_position, f"--{finger_name}")
+            y_position -= 30  # 每行之間的垂直間距
+        pdf_canvas.showPage()
+
+
         page_width, page_height = pdf_canvas._pagesize
 
         # 左手、右手
         for i, label in enumerate(all_fingers_labels):
+
             text = label.cget("text")
-            y_position = page_height * 0.25  # 設置在每頁上半部分的中心
-            pdf_canvas.setFont('ChineseFont', 48)
-            text_width = pdf_canvas.stringWidth(text, 'ChineseFont')  # 取得文字寬度
-            pdf_canvas.drawString((page_width - text_width) / 2, y_position-60, text)  # 將 y_position 調整為文字的底線位置
-
-            # 構建圖檔路徑
             image_path = os.path.join("fingerCache", f"{text}.bmp")
+                
+            if os.path.exists(os.path.join("fingerCache", f"{text}.bmp")):
+                # 構建圖檔路徑
 
-            # 轉換成 PhotoImage
-            photo_image = SavePDFFile.load_image(image_path)
+                y_position = page_height * 0.25  # 設置在每頁上半部分的中心
+                pdf_canvas.setFont('ChineseFont', 48)
+                text_width = pdf_canvas.stringWidth(text, 'ChineseFont')  # 取得文字寬度
+                pdf_canvas.drawString((page_width - text_width) / 2, y_position-60, text)  # 將 y_position 調整為文字的底線位置
 
-            # 調整插入 PDF 中的圖片，等比例縮放至寬度為 100
-            desired_width = 400
-            image_width, image_height = photo_image.width, photo_image.height
-            scale_factor = desired_width / image_width
-            scaled_width = desired_width
-            scaled_height = int(image_height * scale_factor)
-            x_position = (page_width - scaled_width) / 2
-            pdf_canvas.drawInlineImage(photo_image, x_position, y_position, width=scaled_width, height=scaled_height)
-            pdf_canvas.showPage()  # 換頁
+                # 轉換成 PhotoImage
+                photo_image = SavePDFFile.load_image(image_path)
+
+                # 調整插入 PDF 中的圖片，等比例縮放至寬度為 100
+                desired_width = 400
+                image_width, image_height = photo_image.width, photo_image.height
+                scale_factor = desired_width / image_width
+                scaled_width = desired_width
+                scaled_height = int(image_height * scale_factor)
+                x_position = (page_width - scaled_width) / 2
+                pdf_canvas.drawInlineImage(photo_image, x_position, y_position, width=scaled_width, height=scaled_height)
+                pdf_canvas.showPage()  # 換頁
 
         pdf_canvas.save()
 
