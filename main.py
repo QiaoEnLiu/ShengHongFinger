@@ -52,6 +52,11 @@ backup_Content='胜宏利用最先进的脑机介面BCI (Brain-computer interfac
 left_fingers_text=['左手小指','左手无名指','左手中指','左手食指','左手大拇指']
 right_fingers_text=['右手大拇指','右手食指','右手中指','右手无名指','右手小指']
 
+left_fingers_ex=['左手小指test','左手无名指test','左手中指test','左手食指test','左手大拇指test']
+right_fingers_ex=['右手大拇指test','右手食指test','右手中指test','右手无名指test','右手小指test']
+
+example_path = resource_filename(__name__, 'fingereExample/')
+
 global left_hand, left_Pinky, left_Ring, left_Middle, left_Index, left_Thumb
 global right_hand, right_Thumb, right_Index, right_Middle, right_Ring, right_Pinky
 
@@ -61,6 +66,9 @@ right_hand_labels = []
 
 left_hand_buttons = []
 right_hand_buttons = []
+
+left_hand_del_buttons = []
+right_hand_del_buttons = []
 
 userInfo_Text=None
 stop_all_threads = False
@@ -75,7 +83,6 @@ pdfmetrics.registerFont(TTFont('ChineseFont', font_path))
 temp_path = resource_filename(__name__, 'fingerCache/')
 # temp_path = 'fingerCache'
 # print(temp_path)
-do_not_Click=False
 
 
 
@@ -245,10 +252,11 @@ def showImage1(root):
 
 
     for i in range(5):
+
+        
+
         left_label = Label(labFrame,font=(None,18),text=left_fingers_text[i])
-        left_label.bind("<Button-1>", lambda event, text=left_label.cget('text'): thread.picDel_Click(label_text=text))
         right_label = Label(labFrame,font=(None,18),text=right_fingers_text[i])
-        right_label.bind("<Button-1>", lambda event, text=right_label.cget('text'): thread.picDel_Click(label_text=text))
 
         left_label.place(relx=0.155 + i*0.165, rely=0.025)
         right_label.place(relx=0.155 + i*0.165, rely=0.525)
@@ -269,6 +277,19 @@ def showImage1(root):
 
         left_hand_buttons.append(left_button)
         right_hand_buttons.append(right_button)
+
+    for i in range(5):
+        left_del_button = Button(labFrame, font=(None,18),width=12, text='删除'+left_fingers_text[i],state=state,
+                                 command=lambda i=i: thread.picDel_Click(left_hand_labels[i].cget('text')))
+        
+        right_del_button = Button(labFrame, font=(None,18),width=12, text='删除'+right_fingers_text[i],state=state,
+                                  command=lambda i=i: thread.picDel_Click(right_hand_labels[i].cget('text')))
+
+        left_del_button.place(relx=0.155 + i*0.165, rely=0.35)
+        right_del_button.place(relx=0.155 + i*0.165, rely=0.85)
+
+        left_hand_del_buttons.append(left_del_button)
+        right_hand_del_buttons.append(right_del_button)
 
 
     
@@ -586,6 +607,9 @@ class threadGroup:
             if i.cget('text')[2:]==finger_label.cget('text'):
                 print('采集中：',finger_label.cget('text'))
 
+        for i in left_hand_del_buttons+right_hand_del_buttons:
+            i.config(state=tkinter.DISABLED)
+
         # for i in left_hand_labels+right_hand_labels:
         #     if i.cget('text')!=finger_Text:
 
@@ -626,7 +650,7 @@ class means:
             return None
 
     def BeginOrClose(self):
-        global message, isOpen, openButton, isRunning,left_hand_buttons,right_hand_buttons
+        global message, isOpen, openButton, isRunning,left_hand_buttons,right_hand_buttons,left_hand_del_buttons,right_hand_del_buttons
         mean = means()
         auxiliary=auxiliaryMeans()
 
@@ -670,6 +694,9 @@ class means:
                             for i in left_hand_buttons+right_hand_buttons:
                                 i.config(state=tkinter.NORMAL)
                                 print('開啟',i.cget('text')[2:],',狀態：', i.cget('state'))
+                            for i in left_hand_del_buttons+right_hand_del_buttons:
+                                i.config(state=tkinter.NORMAL)
+                            
 
                             MessageText(info+"\r\n")
                         else:
@@ -690,6 +717,9 @@ class means:
                 for i in left_hand_buttons+right_hand_buttons:
                     i.config(state=tkinter.DISABLED)
                     print('關閉',i.cget('text')[2:],',狀態：', i.cget('state'))
+
+                for i in left_hand_del_buttons+right_hand_del_buttons:
+                    i.config(state=tkinter.DISABLED)
 
                 MessageText("关闭设备成功\r\n")
             else:
@@ -1204,6 +1234,9 @@ class means:
                     if i.cget('text')[2:]==finger_label.cget('text'):
                         print('采集结束：',finger_label.cget('text'))
                         MessageText('采集结束：'+finger_label.cget('text'))
+
+                for i in left_hand_del_buttons+right_hand_del_buttons:
+                    i.config(state=tkinter.NORMAL)
 
                 break
             print(RAW)
