@@ -55,7 +55,7 @@ right_fingers_text=['右手大拇指','右手食指','右手中指','右手无�
 left_fingers_ex=['左手小指test','左手无名指test','左手中指test','左手食指test','左手大拇指test']
 right_fingers_ex=['右手大拇指test','右手食指test','右手中指test','右手无名指test','右手小指test']
 
-example_path = resource_filename(__name__, 'fingereExample/')
+example_path = resource_filename(__name__, 'fingerExample/')
 
 global left_hand, left_Pinky, left_Ring, left_Middle, left_Index, left_Thumb
 global right_hand, right_Thumb, right_Index, right_Middle, right_Ring, right_Pinky
@@ -253,10 +253,31 @@ def showImage1(root):
 
     for i in range(5):
 
-        
+        resizeRate=0.5
+        # resizeImg1 = roiImg.resize((int(rollImageWidth * imgResizeRate), int(rollImageHeight * imgResizeRate)))
 
+        # imageFile_left=os.path.join(example_path, left_fingers_ex[i]+'.bmp')
+        # imageFile_right=os.path.join(example_path, right_fingers_ex[i]+'.bmp')
+        # image_left = Image.open(imageFile_left)
+        # image_right = Image.open(imageFile_right)
+        # img_left_width, img_left_height=image_left.size
+        # img_right_width, img_right_height=image_right.size
+        # print(img_left_width, img_left_height)
+        # resizeLeft= image_left.resize((int(img_left_width*resizeRate),int(img_left_height*resizeRate)))
+        # resizerRight= image_right.resize((int(img_right_width*resizeRate),int(img_right_height*resizeRate)))
+        # photo_left = ImageTk.PhotoImage(image_left)
+        # photo_right = ImageTk.PhotoImage(image_right)
+        
+        
         left_label = Label(labFrame,font=(None,18),text=left_fingers_text[i])
         right_label = Label(labFrame,font=(None,18),text=right_fingers_text[i])
+
+        # left_label.config(image=photo_left)
+        # right_label.config(image=photo_right)
+
+
+        # left_label.image = photo_left
+        # right_label.image = photo_right
 
         left_label.place(relx=0.155 + i*0.165, rely=0.025)
         right_label.place(relx=0.155 + i*0.165, rely=0.525)
@@ -790,6 +811,7 @@ class means:
                     baseImage2 = baseImage.filter(ImageFilter.DETAIL)  # 细节增强
                     p.paste(baseImage2, mask=baseImage2)
                     resizeImg2 = p.resize((int(rollImageWidth * imgResizeRate), int(rollImageHeight * imgResizeRate)))
+                    print(rollImageWidth,rollImageHeight)
                     img2 = ImageTk.PhotoImage(resizeImg2)
                     lableShowImage2.config(image=img2)  # 显示最新一张显示图片
                     lableShowImage2.update()
@@ -1181,7 +1203,6 @@ class means:
 
     def fingerPrint(self,finger_label,finger_Text):
         
-
         print(f"請按下{finger_Text}")
         MessageText(f"请按下{finger_Text}\r\n")
         global isOpen, isRunning, message, ShowImage1, ShowImage2, bmpImage1, bmpImage2

@@ -8,7 +8,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('word_font/*', 'word_font/'),('fingerCache', 'fingerCache'),('ftrScanAPI.dll','.'),('WMR08-Plus.lic','.'),('WMRAPI.dll','.')],
+    datas=[('word_font/*', 'word_font/'),('fingerExample/*','fingerExample'),('fingerCache', 'fingerCache'),('ftrScanAPI.dll','.'),('WMR08-Plus.lic','.'),('WMRAPI.dll','.')],
     hiddenimports=['babel.numbers'],
     hookspath=[],
     hooksconfig={},
