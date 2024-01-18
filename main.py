@@ -75,6 +75,7 @@ pdfmetrics.registerFont(TTFont('ChineseFont', font_path))
 temp_path = resource_filename(__name__, 'fingerCache/')
 # temp_path = 'fingerCache'
 # print(temp_path)
+do_not_Click=False
 
 
 
@@ -245,9 +246,9 @@ def showImage1(root):
 
     for i in range(5):
         left_label = Label(labFrame,font=(None,18),text=left_fingers_text[i])
-        left_label.bind("<Button-1>", lambda event, text=left_label.cget('text'): thread.picDel_Click(text))
+        left_label.bind("<Button-1>", lambda event, text=left_label.cget('text'): thread.picDel_Click(label_text=text))
         right_label = Label(labFrame,font=(None,18),text=right_fingers_text[i])
-        right_label.bind("<Button-1>", lambda event, text=right_label.cget('text'): thread.picDel_Click(text))
+        right_label.bind("<Button-1>", lambda event, text=right_label.cget('text'): thread.picDel_Click(label_text=text))
 
         left_label.place(relx=0.155 + i*0.165, rely=0.025)
         right_label.place(relx=0.155 + i*0.165, rely=0.525)
@@ -402,7 +403,7 @@ def ButtonGroup(root):
     allFingersButton = Button(root, text='採集所有指纹',state = state, width=12, height=1, font=(None,16), command=thread.allFingersButton_Click)
     allPictureDeleteButton = Button(root, text='删除所有指纹', width=12, height=1, font=(None,16), command=thread.allPicDelButton_Click)
     # savePictureFile = Button(root, text='储存图档',state = state, width=12, height=1, font=(None,16), command=thread.savePictureFileButton_Click)
-    savePDF = Button(root, text='储存PDF档',state = tkinter.DISABLED, width=12, height=1, font=(None,16), command=thread.savePDF_Button_Click)
+    savePDF = Button(root, text='储存PDF档',state = tkinter.NORMAL, width=12, height=1, font=(None,16), command=thread.savePDF_Button_Click)
     testSavePDF = Button(root, text='测试PDF储存', width=12, height=1, font=(None,16), command=thread.testPDF_Button_Click)
 
     # 按钮的位置，范围0-1
@@ -433,7 +434,7 @@ def ButtonGroup(root):
     systemLogButton.place(relx=0.37, rely=0.01)
     exitButton.place(relx=0.46, rely=0.01)
 
-    return [rollStartButton,featureButton,onCompareFingerButton,onCompareIdentifyButton,onCompareIdentifyNButton,stopButton,SingleDeleteButton,AllDeleteButton, allFingersButton,savePDF]
+    return [rollStartButton,featureButton,onCompareFingerButton,onCompareIdentifyButton,onCompareIdentifyNButton,stopButton,SingleDeleteButton,AllDeleteButton, allFingersButton]
 #endregion
 
 #region threadGroup
@@ -584,6 +585,12 @@ class threadGroup:
             # print(i.cget('text')[2:],'狀態：', i.cget('state'))
             if i.cget('text')[2:]==finger_label.cget('text'):
                 print('采集中：',finger_label.cget('text'))
+
+        # for i in left_hand_labels+right_hand_labels:
+        #     if i.cget('text')!=finger_Text:
+
+        #         i.config(state=tkinter.DISABLED)
+        #         i.bind("<Button-1>", lambda event: 'break')
         
         mean = means()
         verify_thread = threading.Thread(target=mean.fingerPrint, args=(finger_label,finger_Text,))
@@ -591,10 +598,12 @@ class threadGroup:
 
 
     def picDel_Click(self, label_text):
+
         mean = means()
         verify_thread = threading.Thread(target=mean.picDel(label_text))
         verify_thread.start()
     
+
 
 #endregion
 
@@ -1237,6 +1246,15 @@ class means:
         else:
             print("未獲取有效的暫存圖檔來進行輸出")
             MessageText(f"未获取有效的指纹图档来进行输出\r\n")
+
+        # for i in left_hand_labels+right_hand_labels:
+        #     i.config(state=tkinter.NORMAL)
+
+        # for i in range(5):
+        #     left_hand_labels[i].bind("<Button-1>",lambda event: threadGroup.picDel_Click(label_text=left_hand_labels[i].cget('text')))
+        #     right_hand_labels[i].bind("<Button-1>",lambda event: threadGroup.picDel_Click(label_text=left_hand_labels[i].cget('text')))
+
+            
 
 
     #region allPicDel
