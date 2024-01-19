@@ -46,8 +46,8 @@ except locale.Error as e:
 
 
 # backup_Content=f'胜宏利用最先进的脑机介面BCI (Brain-computer interface)，致力于各项脑波演算法与脑波软硬体的开发，\n将脑波数据运用云端大数据平台加以分析，提供医疗及学术研究所需之各项用途，并且将脑波产品生活化，\n应用在教育、健康等方面，发挥其疲劳侦测、辅助睡眠、教育训练、情绪控制、睡眠品质监测等作用，藉此提升生活品质。'
-backup_Content='胜宏利用最先进的脑机介面BCI (Brain-computer interface)，致力于各项脑波演算法与脑波软硬体的开发，将脑波数据运用云端大数据平台加以分析，提供医疗及学术研究所需之各项用途，并且将脑波产品生活化，应用在教育、健康等方面，发挥其疲劳侦测、辅助睡眠、教育训练、情绪控制、睡眠品质监测等作用，藉此提升生活品质。'
-
+# backup_Content='胜宏利用最先进的脑机介面BCI (Brain-computer interface)，致力于各项脑波演算法与脑波软硬体的开发，将脑波数据运用云端大数据平台加以分析，提供医疗及学术研究所需之各项用途，并且将脑波产品生活化，应用在教育、健康等方面，发挥其疲劳侦测、辅助睡眠、教育训练、情绪控制、睡眠品质监测等作用，藉此提升生活品质。'
+backup_Content=''
 
 left_fingers_text=['左手小指','左手无名指','左手中指','左手食指','左手大拇指']
 right_fingers_text=['右手大拇指','右手食指','右手中指','右手无名指','右手小指']
@@ -269,8 +269,8 @@ def showImage1(root):
         # photo_right = ImageTk.PhotoImage(image_right)
         
         
-        left_label = Label(labFrame,font=(None,18),text=left_fingers_text[i])
-        right_label = Label(labFrame,font=(None,18),text=right_fingers_text[i])
+        left_label = Label(labFrame,font=(None,16),text=left_fingers_text[i])
+        right_label = Label(labFrame,font=(None,16),text=right_fingers_text[i])
 
         # left_label.config(image=photo_left)
         # right_label.config(image=photo_right)
@@ -287,10 +287,10 @@ def showImage1(root):
 
 
     for i in range(5):
-        left_button = Button(labFrame, font=(None,18),width=12, text='采集'+left_fingers_text[i],state=state,
+        left_button = Button(labFrame, font=(None,16),width=14, text='采集'+left_fingers_text[i],state=state,
                               command=lambda i=i: thread.fingerPrint_Click(left_hand_labels[i],left_fingers_text[i]))
         
-        right_button = Button(labFrame, font=(None,18),width=12, text='采集'+right_fingers_text[i],state=state,
+        right_button = Button(labFrame, font=(None,16),width=14, text='采集'+right_fingers_text[i],state=state,
                                command=lambda i=i: thread.fingerPrint_Click(right_hand_labels[i],right_fingers_text[i]))
 
         left_button.place(relx=0.155 + i*0.165, rely=0.010)
@@ -300,10 +300,10 @@ def showImage1(root):
         right_hand_buttons.append(right_button)
 
     for i in range(5):
-        left_del_button = Button(labFrame, font=(None,18),width=12, text='删除'+left_fingers_text[i],state=state,
+        left_del_button = Button(labFrame, font=(None,16),width=14, text='删除'+left_fingers_text[i],state=state,
                                  command=lambda i=i: thread.picDel_Click(left_hand_labels[i].cget('text')))
         
-        right_del_button = Button(labFrame, font=(None,18),width=12, text='删除'+right_fingers_text[i],state=state,
+        right_del_button = Button(labFrame, font=(None,16),width=14, text='删除'+right_fingers_text[i],state=state,
                                   command=lambda i=i: thread.picDel_Click(right_hand_labels[i].cget('text')))
 
         left_del_button.place(relx=0.155 + i*0.165, rely=0.35)
@@ -331,7 +331,8 @@ def showUser(root):
     thread = threadGroup()
     # entry_Default = {"姓名": 'Joe', "性別": '男', "出生": '20111222', "住址": 'Taichung City, West Section, Taichung Road, 123',
     #                 "電話": '04123456789'}
-    entry_Default={"姓名":'胜宏精密科技',"性别":'男',"出生":'20111222',"住址":'412台中市大里区福大路41号',"电话":'0424865877',"备註":""}
+    # entry_Default={"姓名":'胜宏精密科技',"性别":'男',"出生":'20111222',"住址":'412台中市大里区福大路41号',"电话":'0424865877',"备註":""}
+    entry_Default={"姓名":'',"性别":'',"出生":'',"住址":'',"电话":'',"备註":''}
     entry_vars = {}
 
     internal_frame = ttk.Frame(userInfoFrame)
@@ -380,8 +381,10 @@ def showUser(root):
         elif label == "备註":
             backup_text = tkinter.Text(internal_frame, font=("Helvetica", 16), wrap=tkinter.WORD, width=30, height=5)
             backup_text.insert("1.0",backup_Content)
+            backup_text.bind("<KeyRelease>", lambda event: entry_var.set(backup_text.get("1.0", "end-1c")))
             backup_text.grid(column=1, row=row, sticky="w", pady=5)
-            entry_var=backup_text.get("1.0",tkinter.END)
+            # entry_var=backup_text.get("1.0",tkinter.END)
+            
             entry_vars[label] = entry_var
 
 
@@ -414,7 +417,7 @@ def showImage2(root):
 #region messageScrolledText
 def messageScrolledText(root):
     global text
-    text = tkinter.scrolledtext.ScrolledText(root, width=70, height=25)  # 设置信息框样式
+    text = tkinter.scrolledtext.ScrolledText(root, width=45, height=15)  # 设置信息框样式
     # text.configure(font=("Arial", 20))
     text.place(relx=0.675, rely=0.55)
     text.see(END)  # 信息框处于滚动条最下面信息的位置

@@ -2,3 +2,15 @@ pyinstaller --onefile --name ShengHongFinger --add-data="word_font/*;word_font/"
 pyinstaller --onefile --name ShengHongFinger main.py
 pyinstaller -y ShengHongFinger.spec
 pyinstaller --onefile --collect-all -y ShengHongFinger.spec
+
+
+eamodio.gitlens
+GrapeCity.gc-excelviewer
+kevinyang.ctlorem
+mathematic.vscode-pdf
+mechatroner.rainbow-csv
+mhutchie.git-graph
+MS-CEINTL.vscode-language-pack-zh-hant
+ms-python.python
+ms-python.vscode-pylance
+techer.open-in-browser
